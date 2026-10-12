@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Retur ELUX — Public Data</title>
+<title>Track and Trace Serial Number — RS ELUX</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <style>
   :root {
     --navy: #1a237e;
@@ -52,7 +53,7 @@
     font-size: 12.5px; font-weight: 700; letter-spacing: 0.6px;
     text-transform: uppercase; opacity: 0.85; white-space: nowrap;
   }
-  .topbar .pill {
+  .topbar .clock {
     font-size: 11.5px; font-weight: 600; opacity: 0.9; text-align: right;
     white-space: nowrap; flex-shrink: 0;
     background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 20px;
@@ -64,9 +65,14 @@
     letter-spacing: 0.2px;
     display: flex; align-items: center; gap: 8px;
   }
-  .topbar-sub { font-size: 12px; opacity: 0.8; margin-top: 4px; line-height: 1.5; }
 
   .wrap { max-width: 960px; margin: 0 auto; padding: 16px; padding-bottom: 48px; }
+
+  .banner {
+    background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;
+    padding: 10px 14px; border-radius: 8px; font-size: 12.5px; line-height: 1.6;
+    margin-bottom: 16px;
+  }
 
   .card {
     background: white; border-radius: var(--radius);
@@ -74,30 +80,159 @@
     margin-bottom: 16px;
     overflow: hidden;
   }
+  .card-pad { padding: 18px; }
 
   .filter-grid {
     display: grid;
-    grid-template-columns: minmax(220px, 2fr) repeat(2, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
     gap: 14px;
     padding: 18px;
   }
-  @media (max-width: 680px) { .filter-grid { grid-template-columns: 1fr; } }
-  .field { display: flex; flex-direction: column; }
+  .filter-grid-ringkas { grid-template-columns: minmax(220px, 2fr) repeat(2, minmax(150px, 1fr)); }
+  @media (max-width: 680px) { .filter-grid-ringkas { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; position: relative; }
   .field label {
     font-size: 10.5px; color: #888; text-transform: uppercase;
     font-weight: 700; letter-spacing: 0.3px; margin-bottom: 6px;
   }
-  .field input, .field select {
+  .field input {
     padding: 10px 12px; border: 1px solid #ccc; border-radius: 7px;
     font-size: 14px; background: white; color: #222; width: 100%;
     font-family: inherit;
   }
-  .field input:focus, .field select:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(26,35,126,0.12); }
+  .field input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(26,35,126,0.12); }
+  .field input:disabled { background: #f3f4f6; color: #999; }
+
+  .combo-list {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 40;
+    background: white; border: 1px solid #d0d7e2; border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15); max-height: 220px; overflow-y: auto;
+    display: none;
+  }
+  .combo-list.open { display: block; }
+  .combo-item { padding: 9px 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
+  .combo-item:last-child { border-bottom: none; }
+  .combo-item:hover { background: #f0f4ff; }
+  .combo-item .main { font-size: 13px; color: var(--navy); font-weight: 700; }
+  .combo-item .sub { font-size: 11px; color: #888; margin-top: 2px; }
+
+  .btn {
+    appearance: none; border: none; border-radius: 7px; cursor: pointer;
+    font-size: 13px; font-weight: 700; padding: 10px 16px;
+    font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    transition: transform 0.05s ease, opacity 0.15s ease;
+    width: 100%;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-primary { background: var(--navy); color: white; }
+  .btn-primary:hover:not(:disabled) { background: #222a94; }
+  .btn-scan { background: white; border: 1.5px solid var(--navy); color: var(--navy); }
+  .btn-scan:hover { background: #f0f2fb; }
+  .btn-secondary { background: white; border: 1px solid #ccc; color: #555; }
+  .btn-secondary:hover:not(:disabled) { background: #f7f7f8; }
+  .btn-danger { background: #dc2626; color: white; }
 
   .filter-footer {
     padding: 12px 18px; border-top: 1px solid #eee; background: #fafafa;
-    font-size: 12px; color: #666;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 10px; font-size: 12px; color: #666;
   }
+  .filter-footer .btn { width: auto; }
+
+  /* ===== Modal Scan QR (kamera) ===== */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(10,12,25,0.78);
+    display: none; align-items: center; justify-content: center; z-index: 200; padding: 14px;
+  }
+  .modal-overlay.open { display: flex; }
+  .scan-modal {
+    background: #0f1226; border-radius: 16px; width: 100%; max-width: 440px;
+    overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    display: flex; flex-direction: column; max-height: 92vh;
+  }
+  .scan-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; color: white;
+  }
+  .scan-head h3 { margin: 0; font-size: 15px; font-weight: 700; }
+  .scan-close {
+    background: rgba(255,255,255,0.12); border: none; color: white;
+    width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .scan-viewport {
+    position: relative; width: 100%; aspect-ratio: 1 / 1; background: #000;
+    overflow: hidden;
+  }
+  #qr-reader { width: 100%; height: 100%; }
+  #qr-reader video { width: 100% !important; height: 100% !important; object-fit: cover; }
+  #qr-reader__dashboard, #qr-reader__header_message, #qr-reader__scan_region img { display: none !important; }
+  #qr-reader__scan_region { position: relative !important; }
+
+  .scan-frame {
+    position: absolute; inset: 14%; border: 3px solid rgba(255,255,255,0.85);
+    border-radius: 16px; pointer-events: none;
+    box-shadow: 0 0 0 2000px rgba(0,0,0,0.35);
+  }
+  .scan-corner { position: absolute; width: 26px; height: 26px; }
+  .scan-corner.tl { top: -3px; left: -3px; border-top: 4px solid #22c55e; border-left: 4px solid #22c55e; border-radius: 8px 0 0 0; }
+  .scan-corner.tr { top: -3px; right: -3px; border-top: 4px solid #22c55e; border-right: 4px solid #22c55e; border-radius: 0 8px 0 0; }
+  .scan-corner.bl { bottom: -3px; left: -3px; border-bottom: 4px solid #22c55e; border-left: 4px solid #22c55e; border-radius: 0 0 0 8px; }
+  .scan-corner.br { bottom: -3px; right: -3px; border-bottom: 4px solid #22c55e; border-right: 4px solid #22c55e; border-radius: 0 0 8px 0; }
+
+  .scan-laser {
+    position: absolute; left: 14%; right: 14%; top: 14%; height: 2px;
+    background: linear-gradient(90deg, transparent, #22c55e, transparent);
+    box-shadow: 0 0 8px 1px #22c55e;
+    animation: scanMove 2.1s ease-in-out infinite;
+  }
+  @keyframes scanMove {
+    0% { top: 14%; }
+    50% { top: 84%; }
+    100% { top: 14%; }
+  }
+
+  .scan-status {
+    position: absolute; bottom: 14px; left: 14px; right: 14px;
+    text-align: center; color: white; font-size: 12.5px;
+    background: rgba(0,0,0,0.45); padding: 8px 10px; border-radius: 8px;
+    backdrop-filter: blur(2px);
+  }
+  .scan-result-flash {
+    position: absolute; inset: 0; background: rgba(34,197,94,0.35);
+    display: none; align-items: center; justify-content: center;
+  }
+  .scan-result-flash.show { display: flex; animation: flashFade 0.5s ease forwards; }
+  @keyframes flashFade { from { opacity: 1; } to { opacity: 0; } }
+
+  .scan-controls {
+    padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .scan-controls-row { display: flex; gap: 10px; }
+  .scan-controls-row .btn { flex: 1; }
+  .scan-manual {
+    display: flex; gap: 8px;
+  }
+  .scan-manual input {
+    flex: 1; padding: 9px 12px; border-radius: 7px; border: 1px solid #333a5c;
+    background: #1a1e3d; color: white; font-size: 13px; font-family: inherit;
+  }
+  .scan-manual input::placeholder { color: #7b82ad; }
+  .scan-hint { color: #9aa0c7; font-size: 11.5px; text-align: center; line-height: 1.5; }
+  .cam-error {
+    display: none; color: #fca5a5; font-size: 12.5px; text-align: center;
+    padding: 14px 16px; line-height: 1.6;
+  }
+  .cam-error.show { display: block; }
+
+  /* ===== Hasil ===== */
+  .produk-header {
+    background: #f0f7ff; border: 1px solid #d0e3f1; border-radius: var(--radius);
+    padding: 16px 18px; margin-bottom: 16px;
+  }
+  .produk-header .kode { font-size: 19px; color: var(--navy); font-weight: 800; word-break: break-word; }
+  .produk-header .detail { font-size: 13px; color: #4b5563; margin-top: 4px; }
 
   .stat-cards {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px;
@@ -114,15 +249,8 @@
   .stat-card.purple .num { color: var(--purple); }
   .stat-card .lbl { font-size: 11.5px; color: #666; }
 
-  .table-title {
-    padding: 15px 18px; border-bottom: 1px solid #eee; font-size: 15px; font-weight: 700;
-    color: #333; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
-  }
-  .table-title .count { font-size: 12px; font-weight: 500; color: #888; }
+  .table-title { padding: 15px 18px; border-bottom: 1px solid #eee; font-size: 15px; font-weight: 700; color: #333; }
 
-  /* Riwayat ditampilkan sbg daftar kartu (bukan tabel lebar) -- konsisten
-     dgn pola track-trace-scan.html: tiap transaksi 1 kartu, field-nya baris
-     label:value, gampang dibaca di HP maupun desktop tanpa geser horizontal. */
   .riwayat-list { padding: 4px 18px 16px; }
   .riwayat-card {
     border: 1px solid #eee; border-radius: 9px; padding: 14px 16px; margin-top: 12px;
@@ -131,7 +259,7 @@
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
     margin-bottom: 10px; flex-wrap: wrap;
   }
-  .riwayat-card-head .kode { font-size: 14px; font-weight: 800; color: var(--navy); }
+  .riwayat-card-head .no { font-size: 12.5px; font-weight: 700; color: var(--navy); }
   .rf { display: flex; justify-content: space-between; gap: 14px; padding: 6px 0; border-top: 1px dashed #eee; }
   .rf:first-of-type { border-top: none; }
   .rf-k { font-size: 11px; color: #888; text-transform: uppercase; font-weight: 700; flex-shrink: 0; }
@@ -140,10 +268,8 @@
     padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: 600;
     display: inline-block; border-left: 4px solid transparent;
   }
-  .badge-modul { background: var(--navy-bg); color: var(--navy); border-left: none; }
-  .badge-modul.sr { background: var(--purple-bg); color: var(--purple); }
 
-  .empty-state, .state {
+  .empty-state {
     background: white; border-radius: var(--radius); box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     text-align: center; padding: 48px 20px; margin-bottom: 16px;
   }
@@ -151,14 +277,19 @@
   .empty-state .title { font-size: 15px; font-weight: 700; color: #374151; margin-bottom: 6px; }
   .empty-state .sub { font-size: 13px; color: #6b7280; max-width: 420px; margin: 0 auto; }
 
-  footer { text-align: center; font-size: 11.5px; color: #9ca3af; padding: 20px; }
+  .hidden { display: none !important; }
+
+  footer { text-align: center; font-size: 11px; color: #9ca3af; padding: 10px 20px 4px; }
   footer a { color: var(--navy); }
 
   @media (max-width: 560px) {
     .wrap { padding: 12px; }
     .filter-grid { padding: 14px; gap: 12px; }
+    .card-pad { padding: 14px; }
     .topbar { padding: 12px 14px 14px; }
     .topbar-title { font-size: 17px; }
+    .topbar .clock { font-size: 10.5px; padding: 4px 9px; }
+    .scan-modal { max-width: 100%; border-radius: 14px; }
   }
 </style>
 </head>
@@ -168,34 +299,35 @@
     <div class="topbar-row1">
       <div class="brand">
         <div class="logo">📦</div>
-        <div class="app">RETUR ELUX</div>
+        <div class="app">RS ELUX</div>
       </div>
-      <div class="pill" id="pillTotal">Memuat…</div>
+      <div class="clock" id="jam">--:--:--</div>
     </div>
-    <div class="topbar-title">🌐 Public Data — Riwayat Retur</div>
-    <div class="topbar-sub">Market Return &amp; Sales Rejection, diperbarui otomatis. Tanpa data customer maupun lampiran dokumen.</div>
+    <div class="topbar-title">🔎 Track and Trace Serial Number</div>
   </div>
 
   <div class="wrap">
 
     <div class="card">
-      <div class="filter-grid">
-        <div class="field">
-          <label>Cari</label>
-          <input id="cari" type="text" placeholder="Nomor product, serial number, nomor transaksi..." />
-        </div>
-        <div class="field">
-          <label>Status</label>
-          <select id="filterStatus"><option value="">Semua Status</option></select>
+      <div class="filter-grid filter-grid-ringkas">
+        <div class="field field-kode">
+          <label>Nomor Product / Serial Number</label>
+          <input id="inpKode" type="text" autocomplete="off" placeholder="Scan QR, atau ketik: NOMORPRODUCT-SERIALNUMBER" disabled />
+          <div class="combo-list" id="listKode"></div>
         </div>
         <div class="field">
           <label>&nbsp;</label>
-          <select id="filterKategori">
-            <option value="">Semua Category</option>
-          </select>
+          <button class="btn btn-primary" id="btnCari">Cari Riwayat</button>
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button class="btn btn-scan" id="btnScan">📷 Scan QR Code</button>
         </div>
       </div>
-      <div class="filter-footer" id="filterFooter">Memuat data…</div>
+      <div class="filter-footer">
+        <span id="infoMuat">Memuat data…</span>
+        <button class="btn btn-secondary" id="btnReset">↺ Atur Ulang Pencarian</button>
+      </div>
     </div>
 
     <div id="hasilWrap"></div>
@@ -203,14 +335,58 @@
   </div>
 
   <footer>
-    Data diambil otomatis dari <a href="https://github.com/it-puninar/retur-elux" target="_blank" rel="noopener">github.com/it-puninar/retur-elux</a>
+    Data publik dari <a href="https://github.com/it-puninar/retur-elux" target="_blank" rel="noopener">github.com/it-puninar/retur-elux</a>, diperbarui otomatis.
   </footer>
 
+  <!-- ===== MODAL SCAN QR (KAMERA) ===== -->
+  <div class="modal-overlay" id="modalScan">
+    <div class="scan-modal">
+      <div class="scan-head">
+        <h3>📷 Scan QR Code Unit</h3>
+        <button class="scan-close" id="btnCloseScan">✕</button>
+      </div>
+
+      <div class="scan-viewport">
+        <div id="qr-reader"></div>
+        <div class="scan-frame">
+          <div class="scan-corner tl"></div>
+          <div class="scan-corner tr"></div>
+          <div class="scan-corner bl"></div>
+          <div class="scan-corner br"></div>
+        </div>
+        <div class="scan-laser" id="scanLaser"></div>
+        <div class="scan-result-flash" id="scanFlash"></div>
+        <div class="scan-status" id="scanStatus">Arahkan kamera ke QR code pada label unit…</div>
+        <div class="cam-error" id="camError">
+          Tidak bisa mengakses kamera. Pastikan browser diizinkan mengakses kamera, dan halaman ini
+          dibuka lewat HTTPS. Kamu tetap bisa ketik kode manual di bawah.
+        </div>
+      </div>
+
+      <div class="scan-controls">
+        <div class="scan-controls-row">
+          <button class="btn btn-secondary" id="btnSwitchCam">🔄 Ganti Kamera</button>
+          <button class="btn btn-secondary" id="btnTorch">🔦 Flash</button>
+        </div>
+        <div class="scan-manual">
+          <input id="inpManualCode" type="text" placeholder="Atau ketik manual: NOMORPRODUCT-SERIALNUMBER" />
+          <button class="btn btn-primary" style="width:auto; white-space:nowrap;" id="btnManualGo">Pakai</button>
+        </div>
+        <div class="scan-hint">Format kode QR: <strong>NOMOR PRODUCT-SERIAL NUMBER</strong>, contoh <code>919090501-61100004</code></div>
+      </div>
+    </div>
+  </div>
+
 <script>
+/* ======================================================================
+   SUMBER DATA -- halaman statis murni (GitHub Pages, tanpa backend sama
+   sekali). Seluruh dataset publik (data.json, hasil ekspor berkala dari
+   sync_github.go) dimuat SEKALI di awal ke variabel SEMUA, lalu semua
+   pencarian/saran di bawah ini cuma filter array itu di memori -- tidak ada
+   request lain setelah load pertama.
+   ====================================================================== */
 const DATA_URL = 'https://raw.githubusercontent.com/it-puninar/retur-elux/main/data.json';
 
-// Sama persis dgn STATUS_META di App.jsx / track-trace-scan.html -- supaya
-// warna status konsisten di seluruh ekosistem aplikasi, termasuk di sini.
 const STATUS_META = {
   'Pendaftaran Surat Tarik': { aksen: '#9CA3AF', bg: '#F3F4F6', teks: '#374151' },
   'Monitoring Penarikan': { aksen: '#3B82F6', bg: '#EFF6FF', teks: '#1E40AF' },
@@ -223,134 +399,375 @@ const STATUS_META = {
 };
 const metaStatus = (st) => STATUS_META[st] || { aksen: '#9CA3AF', bg: '#F3F4F6', teks: '#374151' };
 
-let SEMUA = [];
-let filterModul = ''; // '' = semua, 'MR', 'SR' -- lewat klik stat-card
+/* ====================== JAM ====================== */
+function tickJam() {
+  const d = new Date();
+  const ringkas = window.innerWidth < 480;
+  const jamOpt = { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: ringkas ? undefined : '2-digit', hour12: false };
+  const tglOpt = ringkas
+    ? { timeZone: 'Asia/Jakarta', day: '2-digit', month: 'short' }
+    : { timeZone: 'Asia/Jakarta', weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' };
+  const tgl = d.toLocaleDateString('id-ID', tglOpt);
+  const jam = d.toLocaleTimeString('id-ID', jamOpt);
+  document.getElementById('jam').textContent = ringkas ? `${tgl} • ${jam}` : `${tgl} • ${jam} WIB`;
+}
+window.addEventListener('resize', tickJam);
+tickJam();
+setInterval(tickJam, 1000);
 
-function escapeHTML(s) {
-  return String(s ?? '').replace(/[&<>"']/g, (c) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-  }[c]));
+function formatTanggal(iso) {
+  if (!iso) return '-';
+  const d = new Date(iso + 'T00:00:00');
+  if (isNaN(d)) return '-';
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  return `${dd}/${mm}/${d.getFullYear()}`;
 }
 
-function render() {
-  const kataKunci = document.getElementById('cari').value.trim().toLowerCase();
-  const status = document.getElementById('filterStatus').value;
-  const kategori = document.getElementById('filterKategori').value;
+/* ====================== STATE ====================== */
+let nomorProduct = '';
+let serialNumber = '';
+let riwayatAktif = [];
+let filterModul = null;
+let sudahCari = false;
+let SEMUA = [];      // seluruh baris data.json, apa adanya (snake_case)
+let MASTER_PRODUCT = []; // diturunkan dari SEMUA: {nomorProduct, typeProduct, categoryProduct} unik
 
-  const tampil = SEMUA.filter((r) => {
-    if (filterModul && r.modul !== filterModul) return false;
-    if (status && r.status_proses !== status) return false;
-    if (kategori && r.category_product !== kategori) return false;
-    if (!kataKunci) return true;
-    return [r.nomor_product, r.serial_number, r.nomor_transaksi, r.nomor_induk, r.nomor_alokasi]
-      .some((v) => String(v ?? '').toLowerCase().includes(kataKunci));
-  });
+const inpKode = document.getElementById('inpKode');
+const listKode = document.getElementById('listKode');
+const btnCariEl = document.getElementById('btnCari');
+const btnScanEl = document.getElementById('btnScan');
+btnCariEl.disabled = true;
+btnScanEl.disabled = true;
 
-  document.getElementById('filterFooter').textContent =
-    `Menampilkan ${tampil.length} dari ${SEMUA.length} baris`;
-
-  const jumlahMR = SEMUA.filter((r) => r.modul === 'MR').length;
-  const jumlahSR = SEMUA.filter((r) => r.modul === 'SR').length;
-  document.getElementById('hasilWrap').innerHTML = `
-    <div class="stat-cards">
-      <div class="stat-card ${filterModul === '' ? 'active' : ''}" id="cardSemua"><div class="num">${SEMUA.length}</div><div class="lbl">Total Retur</div></div>
-      <div class="stat-card ${filterModul === 'MR' ? 'active' : ''}" id="cardMR"><div class="num">${jumlahMR}</div><div class="lbl">Market Return</div></div>
-      <div class="stat-card purple ${filterModul === 'SR' ? 'active' : ''}" id="cardSR"><div class="num">${jumlahSR}</div><div class="lbl">Sales Rejection</div></div>
-    </div>
-    ${tampil.length === 0 ? `
-      <div class="empty-state">
-        <div class="emoji">🔍</div>
-        <div class="title">Tidak ada data yang cocok</div>
-        <div class="sub">Coba ubah kata kunci pencarian atau filter-nya.</div>
-      </div>
-    ` : `
-      <div class="card">
-        <div class="table-title">
-          <span>Riwayat Retur</span>
-          <span class="count">${tampil.length} baris</span>
-        </div>
-        <div class="riwayat-list">${tampil.map(baris).join('')}</div>
-      </div>
-    `}
-  `;
-
-  document.getElementById('cardSemua').addEventListener('click', () => { filterModul = ''; render(); });
-  document.getElementById('cardMR').addEventListener('click', () => { filterModul = 'MR'; render(); });
-  document.getElementById('cardSR').addEventListener('click', () => { filterModul = 'SR'; render(); });
-}
-
-function baris(r) {
-  const m = metaStatus(r.status_proses);
-  const badgeStatus = `<span class="badge" style="background:${m.bg};color:${m.teks};border-left-color:${m.aksen}">${escapeHTML(r.status_proses)}</span>`;
-  const badgeModul = `<span class="badge badge-modul ${r.modul === 'SR' ? 'sr' : ''}">${escapeHTML(r.modul)}</span>`;
-
-  const field = (k, v) => `<div class="rf"><span class="rf-k">${k}</span><span class="rf-v">${escapeHTML(v) || '-'}</span></div>`;
-
-  const fieldKhusus = r.modul === 'MR'
-    ? field('Nomor Alokasi', r.nomor_alokasi) + field('Nomor Surat Tarik', r.nomor_transaksi)
-    : field('Nomor DO', r.nomor_induk);
-
-  return `
-    <div class="riwayat-card">
-      <div class="riwayat-card-head">
-        <span class="kode">${escapeHTML(r.nomor_product)} / ${escapeHTML(r.serial_number)}</span>
-        ${badgeModul} ${badgeStatus}
-      </div>
-      ${field('Type Product', r.type_product)}
-      ${field('Category', r.category_product)}
-      ${field('Qty', r.qty)}
-      ${r.modul === 'MR' ? field('Nomor LKTP', r.nomor_induk) : ''}
-      ${fieldKhusus}
-      ${field('Tanggal Mulai', r.tanggal_mulai)}
-      ${field('Tanggal Selesai Inspeksi', r.tanggal_complete)}
-      ${field('Reason Penarikan', r.reason)}
-      ${field('Detail Reason', r.detail_reason)}
-    </div>
-  `;
-}
-
-async function muat() {
+/* ====================== MUAT data.json (SEKALI) ====================== */
+async function muatData() {
   try {
     const res = await fetch(DATA_URL, { cache: 'no-store' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     SEMUA = await res.json();
 
-    document.getElementById('pillTotal').textContent = `${SEMUA.length} record`;
-
-    const statusUnik = [...new Set(SEMUA.map((r) => r.status_proses).filter(Boolean))].sort();
-    const selStatus = document.getElementById('filterStatus');
-    statusUnik.forEach((s) => {
-      const opt = document.createElement('option');
-      opt.value = s; opt.textContent = s;
-      selStatus.appendChild(opt);
+    const peta = new Map();
+    SEMUA.forEach((r) => {
+      if (r.nomor_product && !peta.has(r.nomor_product)) {
+        peta.set(r.nomor_product, { nomorProduct: r.nomor_product, typeProduct: r.type_product, categoryProduct: r.category_product });
+      }
     });
+    MASTER_PRODUCT = [...peta.values()];
 
-    const kategoriUnik = [...new Set(SEMUA.map((r) => r.category_product).filter(Boolean))].sort();
-    const selKategori = document.getElementById('filterKategori');
-    kategoriUnik.forEach((k) => {
-      const opt = document.createElement('option');
-      opt.value = k; opt.textContent = k;
-      selKategori.appendChild(opt);
-    });
-
-    render();
+    document.getElementById('infoMuat').textContent =
+      `${SEMUA.length} record dimuat dari GitHub.`;
   } catch (err) {
-    document.getElementById('pillTotal').textContent = 'Gagal memuat';
-    document.getElementById('filterFooter').textContent = '';
-    document.getElementById('hasilWrap').innerHTML = `
-      <div class="state">
-        <div class="emoji">⚠️</div>
-        <div class="title">Gagal memuat data.json dari GitHub</div>
-        <div class="sub">${escapeHTML(err.message)}</div>
+    console.error('Gagal memuat data.json:', err);
+    document.getElementById('infoMuat').textContent = '❌ Gagal memuat data: ' + err.message;
+  } finally {
+    inpKode.disabled = false;
+    btnCariEl.disabled = false;
+    btnScanEl.disabled = false;
+  }
+}
+muatData();
+
+/* ====================== COMBOBOX SEDERHANA ====================== */
+function setupCombo(inputEl, listEl, getOptions, onPick) {
+  function render(filterTeks) {
+    const opts = getOptions(filterTeks || '');
+    if (!opts.length) { listEl.classList.remove('open'); listEl.innerHTML = ''; return; }
+    listEl.innerHTML = opts.map(o => `
+      <div class="combo-item" data-value="${o.value}">
+        <div class="main">${o.value}</div>
+        ${o.label ? `<div class="sub">${o.label}</div>` : ''}
+      </div>
+    `).join('');
+    listEl.classList.add('open');
+  }
+  inputEl.addEventListener('input', () => { onPick(inputEl.value, true); render(inputEl.value); });
+  inputEl.addEventListener('focus', () => render(inputEl.value));
+  listEl.addEventListener('mousedown', (e) => {
+    const item = e.target.closest('.combo-item');
+    if (!item) return;
+    e.preventDefault();
+    inputEl.value = item.dataset.value;
+    onPick(item.dataset.value, false);
+    listEl.classList.remove('open');
+  });
+  document.addEventListener('click', (e) => {
+    if (!inputEl.contains(e.target) && !listEl.contains(e.target)) listEl.classList.remove('open');
+  });
+  return { render };
+}
+
+function pisahKodeUnit(teks) {
+  const bersih = (teks || '').trim();
+  const idx = bersih.lastIndexOf('-');
+  if (!bersih || idx === -1) return { np: bersih, sn: '' };
+  return { np: bersih.slice(0, idx), sn: bersih.slice(idx + 1) };
+}
+
+// Saran Serial Number per Nomor Product -- diambil langsung dari SEMUA (data
+// yang sudah dimuat), bukan request baru (beda dgn versi internal yang query
+// /track-trace/serial-numbers ke backend).
+function serialUntukProduct(np) {
+  return [...new Set(SEMUA.filter((r) => r.nomor_product === np).map((r) => r.serial_number))];
+}
+
+setupCombo(inpKode, listKode, (teks) => {
+  const { np, sn } = pisahKodeUnit(teks);
+  const bertandaStrip = teks.includes('-');
+  if (!bertandaStrip) {
+    const k = np.trim().toLowerCase();
+    return MASTER_PRODUCT
+      .filter(p => !k || p.nomorProduct.toLowerCase().includes(k) || (p.typeProduct || '').toLowerCase().includes(k))
+      .slice(0, 50)
+      .map(p => ({ value: `${p.nomorProduct}-`, label: p.typeProduct }));
+  }
+  const opsiSerial = serialUntukProduct(np);
+  const k = sn.trim().toLowerCase();
+  return opsiSerial
+    .filter(s => !k || s.toLowerCase().includes(k))
+    .slice(0, 50)
+    .map(s => ({ value: `${np}-${s}`, label: '' }));
+}, (val) => {
+  const { np, sn } = pisahKodeUnit(val);
+  nomorProduct = np; serialNumber = sn;
+  sudahCari = false;
+  renderHasil();
+});
+
+inpKode.addEventListener('keydown', (e) => { if (e.key === 'Enter') { listKode.classList.remove('open'); cariRiwayat(); } });
+
+/* ====================== CARI / RESET ====================== */
+function cariRiwayat(npArg, snArg) {
+  const { np: npDariInput, sn: snDariInput } = pisahKodeUnit(inpKode.value);
+  const np = (npArg ?? npDariInput).trim();
+  const sn = (snArg ?? snDariInput).trim();
+  nomorProduct = np; serialNumber = sn;
+  if (!np || !sn) { alert('Isi kode "Nomor Product-Serial Number" dahulu, atau scan QR unitnya.'); return; }
+
+  const data = SEMUA.filter((r) => r.nomor_product === np && r.serial_number === sn);
+  riwayatAktif = data.map((r) => ({
+    modul: r.modul,
+    nomorTransaksi: r.nomor_transaksi,
+    nomorInduk: r.nomor_induk,
+    nomorAlokasi: r.nomor_alokasi,
+    tanggalMulai: r.tanggal_mulai,
+    tanggalComplete: r.tanggal_complete,
+    reason: r.reason,
+    detailReason: r.detail_reason,
+    statusProses: r.status_proses,
+  }));
+  filterModul = riwayatAktif.some(r => r.modul === 'MR') ? 'MR' : (riwayatAktif.some(r => r.modul === 'SR') ? 'SR' : null);
+  sudahCari = true;
+  renderHasil();
+}
+
+btnCariEl.addEventListener('click', () => cariRiwayat());
+document.getElementById('btnReset').addEventListener('click', () => {
+  nomorProduct = ''; serialNumber = ''; riwayatAktif = []; sudahCari = false;
+  inpKode.value = '';
+  renderHasil();
+});
+
+/* ====================== RENDER HASIL ====================== */
+function renderHasil() {
+  const wrap = document.getElementById('hasilWrap');
+  if (!sudahCari) { wrap.innerHTML = ''; return; }
+
+  const produk = MASTER_PRODUCT.find(p => p.nomorProduct === nomorProduct);
+  const total = riwayatAktif.length;
+  const jumlahMR = riwayatAktif.filter(r => r.modul === 'MR').length;
+  const jumlahSR = riwayatAktif.filter(r => r.modul === 'SR').length;
+
+  if (total === 0) {
+    wrap.innerHTML = `
+      <div class="empty-state">
+        <div class="emoji">🆕</div>
+        <div class="title">Belum ada riwayat retur</div>
+        <div class="sub">Serial number ini belum pernah tercatat diretur lewat Market Return maupun Sales Rejection.</div>
       </div>`;
+    return;
+  }
+
+  const riwayatTampil = riwayatAktif.filter(r => r.modul === filterModul);
+
+  // Catatan: kolom Customer SENGAJA tidak ditampilkan di sini -- data publik
+  // ini tidak pernah menyertakan nama/alamat customer (lihat SYNC_README.md).
+  const kartuHtml = riwayatTampil.map((r, i) => {
+    const m = metaStatus(r.statusProses);
+    const badge = `<span class="badge" style="background:${m.bg};color:${m.teks};border-left-color:${m.aksen}">${r.statusProses}</span>`;
+    const baris = (filterModul === 'MR' ? [
+      ['Nomor LKTP', r.nomorInduk],
+      ['Nomor Alokasi', r.nomorAlokasi],
+      ['Nomor Surat Tarik', r.nomorTransaksi],
+      ['Tanggal LKTP', formatTanggal(r.tanggalMulai)],
+      ['Tanggal Selesai Inspeksi', formatTanggal(r.tanggalComplete)],
+      ['Reason Penarikan', r.reason],
+      ['Detail Reason', r.detailReason],
+    ] : [
+      ['Nomor DO', r.nomorInduk],
+      ['Tanggal Mulai Retur', formatTanggal(r.tanggalMulai)],
+      ['Tanggal Selesai Inspeksi', formatTanggal(r.tanggalComplete)],
+      ['Reason Penarikan', r.reason],
+      ['Detail Reason', r.detailReason],
+    ]).map(([k, v]) => `<div class="rf"><span class="rf-k">${k}</span><span class="rf-v">${v || '-'}</span></div>`).join('');
+
+    return `
+      <div class="riwayat-card">
+        <div class="riwayat-card-head">
+          <span class="no">#${i + 1}</span>
+          ${badge}
+        </div>
+        ${baris}
+      </div>`;
+  }).join('');
+
+  wrap.innerHTML = `
+    <div class="produk-header">
+      <div class="kode">${nomorProduct}-${serialNumber}</div>
+      <div class="detail">${produk?.typeProduct || '-'} · ${produk?.categoryProduct || '-'}</div>
+    </div>
+
+    <div class="stat-cards">
+      <div class="stat-card ${filterModul === 'MR' ? 'active' : ''}" id="cardMR"><div class="num">${jumlahMR}</div><div class="lbl">Market Return</div></div>
+      <div class="stat-card purple ${filterModul === 'SR' ? 'active' : ''}" id="cardSR"><div class="num">${jumlahSR}</div><div class="lbl">Sales Rejection</div></div>
+    </div>
+
+    ${filterModul ? `
+    <div class="card">
+      <div class="table-title">Riwayat Retur — ${filterModul === 'MR' ? 'Market Return' : 'Sales Rejection'} (urut dari yang paling lama)</div>
+      <div class="riwayat-list">${kartuHtml}</div>
+    </div>` : ''}
+  `;
+
+  if (jumlahMR) document.getElementById('cardMR')?.addEventListener('click', () => { filterModul = 'MR'; renderHasil(); });
+  if (jumlahSR) document.getElementById('cardSR')?.addEventListener('click', () => { filterModul = 'SR'; renderHasil(); });
+}
+
+/* ======================================================================
+   SCAN QR — KAMERA BENERAN (html5-qrcode), bukan simulasi input teks.
+   Format QR yang dibaca: "NOMOR PRODUCT-SERIAL NUMBER" (sama seperti QR
+   yang dicetak dari fitur Print QR di aplikasi utama).
+   ====================================================================== */
+const modalScan = document.getElementById('modalScan');
+const scanStatus = document.getElementById('scanStatus');
+const scanFlash = document.getElementById('scanFlash');
+const camError = document.getElementById('camError');
+let html5Qr = null;
+let kameraList = [];
+let kameraIndex = 0;
+let torchMenyala = false;
+let sudahProsesScan = false;
+
+function prosesKodeHasilScan(teks) {
+  if (sudahProsesScan) return;
+  const bersih = (teks || '').trim();
+  const idx = bersih.lastIndexOf('-');
+  if (!bersih || idx === -1) {
+    scanStatus.textContent = `Kode "${bersih}" tidak dikenali. Format: NOMOR PRODUCT-SERIAL NUMBER`;
+    return;
+  }
+  const np = bersih.slice(0, idx);
+  const sn = bersih.slice(idx + 1);
+  const produkDikenal = MASTER_PRODUCT.some(p => p.nomorProduct === np);
+  if (!produkDikenal) {
+    scanStatus.textContent = `Nomor Product "${np}" tidak ditemukan di data publik.`;
+    return;
+  }
+
+  sudahProsesScan = true;
+  scanFlash.classList.add('show');
+  scanStatus.textContent = `✅ Terbaca: ${np} — ${sn}`;
+  navigator.vibrate?.(80);
+
+  setTimeout(() => {
+    tutupScan();
+    inpKode.value = `${np}-${sn}`;
+    cariRiwayat(np, sn);
+  }, 450);
+}
+
+async function mulaiKamera() {
+  camError.classList.remove('show');
+  sudahProsesScan = false;
+  scanStatus.textContent = 'Meminta izin kamera…';
+
+  try {
+    kameraList = await Html5Qrcode.getCameras();
+  } catch (e) {
+    kameraList = [];
+  }
+
+  if (kameraList.length) {
+    const idxBack = kameraList.findIndex(c => /back|belakang|environment|rear/i.test(c.label));
+    kameraIndex = idxBack !== -1 ? idxBack : 0;
+  }
+
+  html5Qr = new Html5Qrcode('qr-reader', false);
+  const config = { fps: 10, qrbox: { width: 230, height: 230 }, aspectRatio: 1.0 };
+  const target = kameraList.length ? (kameraList[kameraIndex]?.id || { facingMode: 'environment' }) : { facingMode: 'environment' };
+
+  try {
+    await html5Qr.start(
+      target,
+      config,
+      (decodedText) => prosesKodeHasilScan(decodedText),
+      () => {}
+    );
+    scanStatus.textContent = 'Arahkan kamera ke QR code pada label unit…';
+  } catch (err) {
+    console.error('Gagal membuka kamera:', err);
+    camError.classList.add('show');
+    scanStatus.textContent = '';
   }
 }
 
-document.getElementById('cari').addEventListener('input', render);
-document.getElementById('filterStatus').addEventListener('change', render);
-document.getElementById('filterKategori').addEventListener('change', render);
+async function hentikanKamera() {
+  if (html5Qr) {
+    try { await html5Qr.stop(); html5Qr.clear(); } catch (e) {}
+    html5Qr = null;
+  }
+}
 
-muat();
+function bukaScan() {
+  modalScan.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  mulaiKamera();
+}
+function tutupScan() {
+  modalScan.classList.remove('open');
+  document.body.style.overflow = '';
+  hentikanKamera();
+}
+
+document.getElementById('btnScan').addEventListener('click', bukaScan);
+document.getElementById('btnCloseScan').addEventListener('click', tutupScan);
+modalScan.addEventListener('click', (e) => { if (e.target === modalScan) tutupScan(); });
+
+document.getElementById('btnSwitchCam').addEventListener('click', async () => {
+  if (kameraList.length < 2) { scanStatus.textContent = 'Cuma ada 1 kamera yang terdeteksi.'; return; }
+  kameraIndex = (kameraIndex + 1) % kameraList.length;
+  await hentikanKamera();
+  mulaiKamera();
+});
+
+document.getElementById('btnTorch').addEventListener('click', async () => {
+  if (!html5Qr) return;
+  try {
+    torchMenyala = !torchMenyala;
+    await html5Qr.applyVideoConstraints({ advanced: [{ torch: torchMenyala }] });
+  } catch (e) {
+    scanStatus.textContent = 'Flash tidak didukung di kamera/browser ini.';
+    torchMenyala = false;
+  }
+});
+
+document.getElementById('btnManualGo').addEventListener('click', () => {
+  const v = document.getElementById('inpManualCode').value;
+  prosesKodeHasilScan(v);
+});
+document.getElementById('inpManualCode').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('btnManualGo').click();
+});
 </script>
 </body>
 </html>
