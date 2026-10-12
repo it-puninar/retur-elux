@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Retur ELUX — Public Data</title>
+<style>
+  :root { --navy: #1a237e; --navy-dark: #10174f; --border: #e5e7eb; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #f3f4f6; color: #1f2330; font-size: 14px;
+  }
+  header {
+    background: linear-gradient(135deg, var(--navy), var(--navy-dark));
+    color: white; padding: 18px 20px;
+  }
+  header h1 { margin: 0; font-size: 18px; }
+  header p { margin: 6px 0 0; font-size: 12.5px; opacity: 0.85; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 18px; }
+  .card {
+    background: white; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    margin-bottom: 16px; overflow: hidden;
+  }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; padding: 16px 18px; }
+  .toolbar input, .toolbar select {
+    padding: 9px 12px; border: 1px solid #ccc; border-radius: 7px; font-size: 13px;
+  }
+  .toolbar input { flex: 1; min-width: 180px; }
+  .info { padding: 0 18px 14px; font-size: 12px; color: #666; }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    padding: 10px 12px; text-align: left; font-size: 10.5px; font-weight: 700;
+    color: #555; text-transform: uppercase; border-bottom: 2px solid var(--border);
+    background: #f8f9fa; white-space: nowrap; position: sticky; top: 0;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid #eee; font-size: 12.5px; white-space: nowrap; }
+  .table-wrap { overflow-x: auto; max-height: 70vh; }
+  .badge {
+    padding: 3px 9px; border-radius: 5px; font-size: 10.5px; font-weight: 600;
+    display: inline-block;
+  }
+  .badge-mr { background: #e8eaf6; color: #1a237e; }
+  .badge-sr { background: #f5f3ff; color: #5b21b6; }
+  .state { padding: 50px 20px; text-align: center; color: #6b7280; }
+  footer { text-align: center; font-size: 11.5px; color: #9ca3af; padding: 20px; }
+  footer a { color: #6366f1; }
+  @media (max-width: 560px) {
+    .wrap { padding: 12px; }
+    .toolbar { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>📦 Retur ELUX — Public Data</h1>
+    <p>Data riwayat retur (Market Return &amp; Sales Rejection) yang dipublikasikan secara berkala. Tanpa data customer maupun lampiran dokumen.</p>
+  </header>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="toolbar">
+        <input id="cari" type="text" placeholder="Cari nomor product, serial number, nomor transaksi..." />
+        <select id="filterModul">
+          <option value="">Semua Modul</option>
+          <option value="MR">Market Return</option>
+          <option value="SR">Sales Rejection</option>
+        </select>
+        <select id="filterStatus">
+          <option value="">Semua Status</option>
+        </select>
+      </div>
+      <div class="info" id="info">Memuat data…</div>
+      <div class="table-wrap">
+        <table id="tabel" style="display:none">
+          <thead>
+            <tr>
+              <th>Modul</th>
+              <th>Nomor Product</th>
+              <th>Type Product</th>
+              <th>Category</th>
+              <th>Serial Number</th>
+              <th>Qty</th>
+              <th>Nomor Transaksi</th>
+              <th>Nomor Induk</th>
+              <th>Nomor Alokasi</th>
+              <th>Tanggal Mulai</th>
+              <th>Tanggal Selesai</th>
+              <th>Reason</th>
+              <th>Detail Reason</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Data diambil otomatis dari <a href="https://github.com/it-puninar/retur-elux" target="_blank" rel="noopener">github.com/it-puninar/retur-elux</a> — diperbarui berkala.
+  </footer>
+
+<script>
+const DATA_URL = 'https://raw.githubusercontent.com/it-puninar/retur-elux/main/data.json';
+
+let SEMUA = [];
+
+function escapeHTML(s) {
+  return String(s ?? '').replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[c]));
+}
+
+function render() {
+  const kataKunci = document.getElementById('cari').value.trim().toLowerCase();
+  const modul = document.getElementById('filterModul').value;
+  const status = document.getElementById('filterStatus').value;
+
+  const tampil = SEMUA.filter((r) => {
+    if (modul && r.modul !== modul) return false;
+    if (status && r.status_proses !== status) return false;
+    if (!kataKunci) return true;
+    return [r.nomor_product, r.serial_number, r.nomor_transaksi, r.nomor_induk, r.nomor_alokasi]
+      .some((v) => String(v ?? '').toLowerCase().includes(kataKunci));
+  });
+
+  document.getElementById('info').textContent =
+    `Menampilkan ${tampil.length} dari ${SEMUA.length} baris`;
+
+  document.getElementById('tbody').innerHTML = tampil.map((r) => `
+    <tr>
+      <td><span class="badge ${r.modul === 'MR' ? 'badge-mr' : 'badge-sr'}">${escapeHTML(r.modul)}</span></td>
+      <td>${escapeHTML(r.nomor_product)}</td>
+      <td>${escapeHTML(r.type_product)}</td>
+      <td>${escapeHTML(r.category_product)}</td>
+      <td>${escapeHTML(r.serial_number)}</td>
+      <td>${escapeHTML(r.qty)}</td>
+      <td>${escapeHTML(r.nomor_transaksi)}</td>
+      <td>${escapeHTML(r.nomor_induk)}</td>
+      <td>${escapeHTML(r.nomor_alokasi)}</td>
+      <td>${escapeHTML(r.tanggal_mulai)}</td>
+      <td>${escapeHTML(r.tanggal_complete)}</td>
+      <td>${escapeHTML(r.reason)}</td>
+      <td>${escapeHTML(r.detail_reason)}</td>
+      <td>${escapeHTML(r.status_proses)}</td>
+    </tr>
+  `).join('');
+}
+
+async function muat() {
+  try {
+    const res = await fetch(DATA_URL, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    SEMUA = await res.json();
+
+    const statusUnik = [...new Set(SEMUA.map((r) => r.status_proses).filter(Boolean))].sort();
+    const selStatus = document.getElementById('filterStatus');
+    statusUnik.forEach((s) => {
+      const opt = document.createElement('option');
+      opt.value = s; opt.textContent = s;
+      selStatus.appendChild(opt);
+    });
+
+    document.getElementById('tabel').style.display = '';
+    render();
+  } catch (err) {
+    document.getElementById('info').innerHTML =
+      `<div class="state">Gagal memuat data.json dari GitHub: ${escapeHTML(err.message)}</div>`;
+  }
+}
+
+document.getElementById('cari').addEventListener('input', render);
+document.getElementById('filterModul').addEventListener('change', render);
+document.getElementById('filterStatus').addEventListener('change', render);
+
+muat();
+</script>
+</body>
+</html>
