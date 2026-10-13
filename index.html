@@ -312,7 +312,7 @@
       <div class="filter-grid filter-grid-ringkas">
         <div class="field field-kode">
           <label>Nomor Product / Serial Number</label>
-          <input id="inpKode" type="text" autocomplete="off" placeholder="Scan QR, atau ketik: NOMORPRODUCT-SERIALNUMBER" disabled />
+          <input id="inpKode" type="text" autocomplete="off" placeholder="Scan QR, atau ketik: (240)NOMORPRODUCT(21)SERIALNUMBER" disabled />
           <div class="combo-list" id="listKode"></div>
         </div>
         <div class="field">
@@ -369,10 +369,10 @@
           <button class="btn btn-secondary" id="btnTorch">🔦 Flash</button>
         </div>
         <div class="scan-manual">
-          <input id="inpManualCode" type="text" placeholder="Atau ketik manual: NOMORPRODUCT-SERIALNUMBER" />
+          <input id="inpManualCode" type="text" placeholder="Atau ketik manual: (240)NOMORPRODUCT(21)SERIALNUMBER" />
           <button class="btn btn-primary" style="width:auto; white-space:nowrap;" id="btnManualGo">Pakai</button>
         </div>
-        <div class="scan-hint">Format kode QR: <strong>NOMOR PRODUCT-SERIAL NUMBER</strong>, contoh <code>919090501-61100004</code></div>
+        <div class="scan-hint">Format kode QR GS1: <strong>(240)NOMOR PRODUCT(21)SERIAL NUMBER</strong>, contoh <code>(240)925060920(21)32372662</code></div>
       </div>
     </div>
   </div>
@@ -499,9 +499,9 @@ function setupCombo(inputEl, listEl, getOptions, onPick) {
 
 function pisahKodeUnit(teks) {
   const bersih = (teks || '').trim();
-  const idx = bersih.lastIndexOf('-');
-  if (!bersih || idx === -1) return { np: bersih, sn: '' };
-  return { np: bersih.slice(0, idx), sn: bersih.slice(idx + 1) };
+  const idx = bersih.indexOf('(21)');
+  if (!bersih || idx === -1) return { np: bersih.replace(/^\(240\)/, ''), sn: '' };
+  return { np: bersih.slice(0, idx).replace(/^\(240\)/, ''), sn: bersih.slice(idx + 4) };
 }
 
 // Saran Serial Number per Nomor Product -- diambil langsung dari SEMUA (data
@@ -513,20 +513,20 @@ function serialUntukProduct(np) {
 
 setupCombo(inpKode, listKode, (teks) => {
   const { np, sn } = pisahKodeUnit(teks);
-  const bertandaStrip = teks.includes('-');
-  if (!bertandaStrip) {
+  const sudahAdaSerial = teks.includes('(21)');
+  if (!sudahAdaSerial) {
     const k = np.trim().toLowerCase();
     return MASTER_PRODUCT
       .filter(p => !k || p.nomorProduct.toLowerCase().includes(k) || (p.typeProduct || '').toLowerCase().includes(k))
       .slice(0, 50)
-      .map(p => ({ value: `${p.nomorProduct}-`, label: p.typeProduct }));
+      .map(p => ({ value: `(240)${p.nomorProduct}(21)`, label: p.typeProduct }));
   }
   const opsiSerial = serialUntukProduct(np);
   const k = sn.trim().toLowerCase();
   return opsiSerial
     .filter(s => !k || s.toLowerCase().includes(k))
     .slice(0, 50)
-    .map(s => ({ value: `${np}-${s}`, label: '' }));
+    .map(s => ({ value: `(240)${np}(21)${s}`, label: '' }));
 }, (val) => {
   const { np, sn } = pisahKodeUnit(val);
   nomorProduct = np; serialNumber = sn;
@@ -542,7 +542,7 @@ function cariRiwayat(npArg, snArg) {
   const np = (npArg ?? npDariInput).trim();
   const sn = (snArg ?? snDariInput).trim();
   nomorProduct = np; serialNumber = sn;
-  if (!np || !sn) { alert('Isi kode "Nomor Product-Serial Number" dahulu, atau scan QR unitnya.'); return; }
+  if (!np || !sn) { alert('Isi kode "(240)Nomor Product(21)Serial Number" dahulu, atau scan QR unitnya.'); return; }
 
   const data = SEMUA.filter((r) => r.nomor_product === np && r.serial_number === sn);
   riwayatAktif = data.map((r) => ({
@@ -623,7 +623,7 @@ function renderHasil() {
 
   wrap.innerHTML = `
     <div class="produk-header">
-      <div class="kode">${nomorProduct}-${serialNumber}</div>
+      <div class="kode">(240)${nomorProduct}(21)${serialNumber}</div>
       <div class="detail">${produk?.typeProduct || '-'} · ${produk?.categoryProduct || '-'}</div>
     </div>
 
@@ -645,8 +645,8 @@ function renderHasil() {
 
 /* ======================================================================
    SCAN QR — KAMERA BENERAN (html5-qrcode), bukan simulasi input teks.
-   Format QR yang dibaca: "NOMOR PRODUCT-SERIAL NUMBER" (sama seperti QR
-   yang dicetak dari fitur Print QR di aplikasi utama).
+   Format QR yang dibaca: GS1 "(240)NOMOR PRODUCT(21)SERIAL NUMBER" (sama
+   seperti QR yang dicetak dari fitur Print QR di aplikasi utama).
    ====================================================================== */
 const modalScan = document.getElementById('modalScan');
 const scanStatus = document.getElementById('scanStatus');
@@ -661,13 +661,11 @@ let sudahProsesScan = false;
 function prosesKodeHasilScan(teks) {
   if (sudahProsesScan) return;
   const bersih = (teks || '').trim();
-  const idx = bersih.lastIndexOf('-');
-  if (!bersih || idx === -1) {
-    scanStatus.textContent = `Kode "${bersih}" tidak dikenali. Format: NOMOR PRODUCT-SERIAL NUMBER`;
+  const { np, sn } = pisahKodeUnit(bersih);
+  if (!bersih || !np || !sn) {
+    scanStatus.textContent = `Kode "${bersih}" tidak dikenali. Format: (240)NOMOR PRODUCT(21)SERIAL NUMBER`;
     return;
   }
-  const np = bersih.slice(0, idx);
-  const sn = bersih.slice(idx + 1);
   const produkDikenal = MASTER_PRODUCT.some(p => p.nomorProduct === np);
   if (!produkDikenal) {
     scanStatus.textContent = `Nomor Product "${np}" tidak ditemukan di data publik.`;
@@ -681,7 +679,7 @@ function prosesKodeHasilScan(teks) {
 
   setTimeout(() => {
     tutupScan();
-    inpKode.value = `${np}-${sn}`;
+    inpKode.value = `(240)${np}(21)${sn}`;
     cariRiwayat(np, sn);
   }, 450);
 }
