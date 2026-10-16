@@ -7773,7 +7773,7 @@
     "tanggal_complete": null,
     "reason": null,
     "detail_reason": "otomatisnya rusak cacat vendor",
-    "status_proses": "Monitoring Penarikan"
+    "status_proses": "Konfirmasi Fisik dan Estimasi"
   },
   {
     "modul": "MR",
