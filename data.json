@@ -4075,8 +4075,8 @@
     "nomor_alokasi": "9304416468",
     "tanggal_mulai": "2026-07-27",
     "tanggal_complete": null,
-    "reason": "1. Masalah Administratif",
-    "detail_reason": "SR_ADMINISTRATIF",
+    "reason": "2. Masalah Packing Unit/Dus",
+    "detail_reason": "SR_KARTON SOBEK",
     "status_proses": "Proses GR IBD"
   },
   {
@@ -4091,8 +4091,8 @@
     "nomor_alokasi": "9304416468",
     "tanggal_mulai": "2026-07-27",
     "tanggal_complete": null,
-    "reason": "2. Masalah Packing Unit/Dus",
-    "detail_reason": "SR_KARTON SOBEK",
+    "reason": "1. Masalah Administratif",
+    "detail_reason": "SR_ADMINISTRATIF",
     "status_proses": "Proses GR IBD"
   },
   {
@@ -9729,8 +9729,8 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "956006559",
-    "type_product": "ESM053C2WAE",
+    "nomor_product": "956006523",
+    "type_product": "ESM053C2WAI",
     "category_product": "Home Comfort MA",
     "serial_number": "",
     "qty": 1,
@@ -9745,8 +9745,8 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "956006523",
-    "type_product": "ESM053C2WAI",
+    "nomor_product": "956006559",
+    "type_product": "ESM053C2WAE",
     "category_product": "Home Comfort MA",
     "serial_number": "",
     "qty": 1,
