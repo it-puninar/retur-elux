@@ -4075,8 +4075,8 @@
     "nomor_alokasi": "9304416468",
     "tanggal_mulai": "2026-07-27",
     "tanggal_complete": null,
-    "reason": "2. Masalah Packing Unit/Dus",
-    "detail_reason": "SR_KARTON SOBEK",
+    "reason": "1. Masalah Administratif",
+    "detail_reason": "SR_ADMINISTRATIF",
     "status_proses": "Proses GR IBD"
   },
   {
@@ -4091,8 +4091,8 @@
     "nomor_alokasi": "9304416468",
     "tanggal_mulai": "2026-07-27",
     "tanggal_complete": null,
-    "reason": "1. Masalah Administratif",
-    "detail_reason": "SR_ADMINISTRATIF",
+    "reason": "2. Masalah Packing Unit/Dus",
+    "detail_reason": "SR_KARTON SOBEK",
     "status_proses": "Proses GR IBD"
   },
   {
@@ -6754,22 +6754,6 @@
   {
     "modul": "MR",
     "nomor_product": "925060920",
-    "type_product": "EQE5600 A-S",
-    "category_product": "Food Preservation",
-    "serial_number": "33775860",
-    "qty": 1,
-    "nomor_transaksi": "TRK20261012-0127",
-    "nomor_induk": "Modern/lktp/198/VI/26",
-    "nomor_alokasi": "PKB/TU/26/004638",
-    "tanggal_mulai": "2026-06-04",
-    "tanggal_complete": null,
-    "reason": "QUALITY",
-    "detail_reason": "TIDAK DINGIN",
-    "status_proses": "Monitoring Penarikan"
-  },
-  {
-    "modul": "MR",
-    "nomor_product": "925060920",
     "type_product": "EQE5600AS",
     "category_product": "Food Preservation",
     "serial_number": "33775869",
@@ -6781,7 +6765,23 @@
     "tanggal_complete": null,
     "reason": "QUALITY",
     "detail_reason": "TIDAK DINGIN",
-    "status_proses": "Monitoring Penarikan"
+    "status_proses": "Konfirmasi Fisik dan Estimasi"
+  },
+  {
+    "modul": "MR",
+    "nomor_product": "925060920",
+    "type_product": "EQE5600 A-S",
+    "category_product": "Food Preservation",
+    "serial_number": "33775860",
+    "qty": 1,
+    "nomor_transaksi": "TRK20261022-0001",
+    "nomor_induk": "Modern/lktp/198/VI/26",
+    "nomor_alokasi": "PKB/TU/26/004638",
+    "tanggal_mulai": "2026-06-04",
+    "tanggal_complete": null,
+    "reason": "QUALITY",
+    "detail_reason": "TIDAK DINGIN",
+    "status_proses": "Pendaftaran Surat Tarik"
   },
   {
     "modul": "MR",
