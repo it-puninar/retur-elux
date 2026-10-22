@@ -4075,8 +4075,8 @@
     "nomor_alokasi": "9304416468",
     "tanggal_mulai": "2026-07-27",
     "tanggal_complete": null,
-    "reason": "1. Masalah Administratif",
-    "detail_reason": "SR_ADMINISTRATIF",
+    "reason": "2. Masalah Packing Unit/Dus",
+    "detail_reason": "SR_KARTON SOBEK",
     "status_proses": "Proses GR IBD"
   },
   {
@@ -4091,8 +4091,8 @@
     "nomor_alokasi": "9304416468",
     "tanggal_mulai": "2026-07-27",
     "tanggal_complete": null,
-    "reason": "2. Masalah Packing Unit/Dus",
-    "detail_reason": "SR_KARTON SOBEK",
+    "reason": "1. Masalah Administratif",
+    "detail_reason": "SR_ADMINISTRATIF",
     "status_proses": "Proses GR IBD"
   },
   {
@@ -5393,8 +5393,8 @@
   },
   {
     "modul": "SR",
-    "nomor_product": "914922074",
-    "type_product": "EWF1024D3WC",
+    "nomor_product": "914922113",
+    "type_product": "EWF1023P5SC",
     "category_product": "Fabric Care",
     "serial_number": "NA",
     "qty": 1,
@@ -5409,8 +5409,8 @@
   },
   {
     "modul": "SR",
-    "nomor_product": "914922113",
-    "type_product": "EWF1023P5SC",
+    "nomor_product": "914922074",
+    "type_product": "EWF1024D3WC",
     "category_product": "Fabric Care",
     "serial_number": "NA",
     "qty": 1,
@@ -6321,38 +6321,6 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "956005387",
-    "type_product": "EWS151DXDWM",
-    "category_product": "Home Comfort MA",
-    "serial_number": "",
-    "qty": 1,
-    "nomor_transaksi": "TRK20261012-0114",
-    "nomor_induk": "Modern/lktp/173/II/26",
-    "nomor_alokasi": "JKT/TU/26/004284",
-    "tanggal_mulai": "2026-02-10",
-    "tanggal_complete": "2026-10-12",
-    "reason": null,
-    "detail_reason": null,
-    "status_proses": "Complete Return"
-  },
-  {
-    "modul": "MR",
-    "nomor_product": "956005321",
-    "type_product": "EWE241KXDWB6",
-    "category_product": "Home Comfort MA",
-    "serial_number": "",
-    "qty": 1,
-    "nomor_transaksi": "TRK20261012-0114",
-    "nomor_induk": "Modern/lktp/173/II/26",
-    "nomor_alokasi": "JKT/TU/26/004284",
-    "tanggal_mulai": "2026-02-10",
-    "tanggal_complete": "2026-10-12",
-    "reason": null,
-    "detail_reason": null,
-    "status_proses": "Complete Return"
-  },
-  {
-    "modul": "MR",
     "nomor_product": "956001022",
     "type_product": "EWS30BEXDW1",
     "category_product": "Home Comfort MA",
@@ -6403,6 +6371,38 @@
     "modul": "MR",
     "nomor_product": "956005387",
     "type_product": "EWS151DXDWM",
+    "category_product": "Home Comfort MA",
+    "serial_number": "",
+    "qty": 1,
+    "nomor_transaksi": "TRK20261012-0114",
+    "nomor_induk": "Modern/lktp/173/II/26",
+    "nomor_alokasi": "JKT/TU/26/004284",
+    "tanggal_mulai": "2026-02-10",
+    "tanggal_complete": "2026-10-12",
+    "reason": null,
+    "detail_reason": null,
+    "status_proses": "Complete Return"
+  },
+  {
+    "modul": "MR",
+    "nomor_product": "956005387",
+    "type_product": "EWS151DXDWM",
+    "category_product": "Home Comfort MA",
+    "serial_number": "",
+    "qty": 1,
+    "nomor_transaksi": "TRK20261012-0114",
+    "nomor_induk": "Modern/lktp/173/II/26",
+    "nomor_alokasi": "JKT/TU/26/004284",
+    "tanggal_mulai": "2026-02-10",
+    "tanggal_complete": "2026-10-12",
+    "reason": null,
+    "detail_reason": null,
+    "status_proses": "Complete Return"
+  },
+  {
+    "modul": "MR",
+    "nomor_product": "956005321",
+    "type_product": "EWE241KXDWB6",
     "category_product": "Home Comfort MA",
     "serial_number": "",
     "qty": 1,
@@ -6829,23 +6829,7 @@
     "tanggal_complete": null,
     "reason": null,
     "detail_reason": "TIDAK PANAS",
-    "status_proses": "Pendaftaran RS"
-  },
-  {
-    "modul": "MR",
-    "nomor_product": "956001007",
-    "type_product": "EWS30BEXDW",
-    "category_product": "",
-    "serial_number": "ELECR1000100001",
-    "qty": 1,
-    "nomor_transaksi": "TRK20261012-0125",
-    "nomor_induk": "Modern/lktp/198/VI/26",
-    "nomor_alokasi": "TGR/TU/26/004636",
-    "tanggal_mulai": "2026-06-04",
-    "tanggal_complete": null,
-    "reason": null,
-    "detail_reason": "TIDAK PANAS",
-    "status_proses": "Pendaftaran RS"
+    "status_proses": "Proses GR IBD"
   },
   {
     "modul": "MR",
@@ -6861,7 +6845,23 @@
     "tanggal_complete": null,
     "reason": null,
     "detail_reason": "TIDAK PANAS",
-    "status_proses": "Pendaftaran RS"
+    "status_proses": "Proses GR IBD"
+  },
+  {
+    "modul": "MR",
+    "nomor_product": "956001007",
+    "type_product": "EWS30BEXDW",
+    "category_product": "",
+    "serial_number": "ELECR1000100001",
+    "qty": 1,
+    "nomor_transaksi": "TRK20261012-0125",
+    "nomor_induk": "Modern/lktp/198/VI/26",
+    "nomor_alokasi": "TGR/TU/26/004636",
+    "tanggal_mulai": "2026-06-04",
+    "tanggal_complete": null,
+    "reason": null,
+    "detail_reason": "TIDAK PANAS",
+    "status_proses": "Proses GR IBD"
   },
   {
     "modul": "MR",
@@ -6877,7 +6877,7 @@
     "tanggal_complete": null,
     "reason": null,
     "detail_reason": "KNOP RUSAK",
-    "status_proses": "Pendaftaran RS"
+    "status_proses": "Proses GR IBD"
   },
   {
     "modul": "MR",
@@ -6893,7 +6893,7 @@
     "tanggal_complete": null,
     "reason": null,
     "detail_reason": "TOMBOL MACET",
-    "status_proses": "Pendaftaran RS"
+    "status_proses": "Proses GR IBD"
   },
   {
     "modul": "MR",
@@ -6909,7 +6909,7 @@
     "tanggal_complete": null,
     "reason": null,
     "detail_reason": "TIDAK PANAS",
-    "status_proses": "Pendaftaran RS"
+    "status_proses": "Proses GR IBD"
   },
   {
     "modul": "MR",
@@ -6925,7 +6925,7 @@
     "tanggal_complete": null,
     "reason": null,
     "detail_reason": "TIDAK PANAS",
-    "status_proses": "Pendaftaran RS"
+    "status_proses": "Proses GR IBD"
   },
   {
     "modul": "MR",
@@ -8316,7 +8316,7 @@
     "tanggal_mulai": "2026-07-07",
     "tanggal_complete": "2026-10-12",
     "reason": null,
-    "detail_reason": "tidak dingin",
+    "detail_reason": "PINTU KULKAS LONGGAR",
     "status_proses": "Complete Return"
   },
   {
@@ -8332,7 +8332,7 @@
     "tanggal_mulai": "2026-07-07",
     "tanggal_complete": "2026-10-12",
     "reason": null,
-    "detail_reason": "PINTU KULKAS LONGGAR",
+    "detail_reason": "tidak dingin",
     "status_proses": "Complete Return"
   },
   {
@@ -9889,22 +9889,6 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "956007188",
-    "type_product": "EQE4200AB",
-    "category_product": "Food Preservation",
-    "serial_number": "",
-    "qty": 1,
-    "nomor_transaksi": "TRK20261012-0234",
-    "nomor_induk": "Modern/lktp/212/VIII/26",
-    "nomor_alokasi": "JKT/TU/26/004891",
-    "tanggal_mulai": "2026-08-06",
-    "tanggal_complete": "2026-10-12",
-    "reason": null,
-    "detail_reason": "KERUSAKAN BAGIAN MODUL KULKAS",
-    "status_proses": "Complete Return"
-  },
-  {
-    "modul": "MR",
     "nomor_product": "925061096",
     "type_product": "ETM3400LB",
     "category_product": "Food Preservation",
@@ -9917,6 +9901,22 @@
     "tanggal_complete": "2026-10-12",
     "reason": null,
     "detail_reason": "KEBOCORAN",
+    "status_proses": "Complete Return"
+  },
+  {
+    "modul": "MR",
+    "nomor_product": "956007188",
+    "type_product": "EQE4200AB",
+    "category_product": "Food Preservation",
+    "serial_number": "",
+    "qty": 1,
+    "nomor_transaksi": "TRK20261012-0234",
+    "nomor_induk": "Modern/lktp/212/VIII/26",
+    "nomor_alokasi": "JKT/TU/26/004891",
+    "tanggal_mulai": "2026-08-06",
+    "tanggal_complete": "2026-10-12",
+    "reason": null,
+    "detail_reason": "KERUSAKAN BAGIAN MODUL KULKAS",
     "status_proses": "Complete Return"
   },
   {
@@ -11153,22 +11153,6 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "956007169",
-    "type_product": "ETM2500AA",
-    "category_product": "Food Preservation",
-    "serial_number": "",
-    "qty": 1,
-    "nomor_transaksi": "TRK20261012-0283",
-    "nomor_induk": "Modern/lktp/241/XI/26",
-    "nomor_alokasi": "TGR/TU/26/004995",
-    "tanggal_mulai": "2026-09-07",
-    "tanggal_complete": null,
-    "reason": null,
-    "detail_reason": "KULKAS TIDAK DINGIN",
-    "status_proses": "Proses GR IBD"
-  },
-  {
-    "modul": "MR",
     "nomor_product": "919090501",
     "type_product": "EWT0H78K6WA",
     "category_product": "Fabric Care",
@@ -11187,6 +11171,22 @@
     "modul": "MR",
     "nomor_product": "956007170",
     "type_product": "ETM2500AB",
+    "category_product": "Food Preservation",
+    "serial_number": "",
+    "qty": 1,
+    "nomor_transaksi": "TRK20261012-0283",
+    "nomor_induk": "Modern/lktp/241/XI/26",
+    "nomor_alokasi": "TGR/TU/26/004995",
+    "tanggal_mulai": "2026-09-07",
+    "tanggal_complete": null,
+    "reason": null,
+    "detail_reason": "KULKAS TIDAK DINGIN",
+    "status_proses": "Proses GR IBD"
+  },
+  {
+    "modul": "MR",
+    "nomor_product": "956007169",
+    "type_product": "ETM2500AA",
     "category_product": "Food Preservation",
     "serial_number": "",
     "qty": 1,
@@ -11729,9 +11729,9 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "925060918",
-    "type_product": "EQE5660AB",
-    "category_product": "Food Preservation",
+    "nomor_product": "914922063",
+    "type_product": "EWF8024D3WC",
+    "category_product": "Fabric Care",
     "serial_number": "",
     "qty": 1,
     "nomor_transaksi": "TRK20261012-0304",
@@ -11745,9 +11745,9 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "914922063",
-    "type_product": "EWF8024D3WC",
-    "category_product": "Fabric Care",
+    "nomor_product": "925060918",
+    "type_product": "EQE5660AB",
+    "category_product": "Food Preservation",
     "serial_number": "",
     "qty": 1,
     "nomor_transaksi": "TRK20261012-0304",
@@ -18449,9 +18449,41 @@
   },
   {
     "modul": "MR",
+    "nomor_product": "914922375",
+    "type_product": "EWF1124D3EC",
+    "category_product": "",
+    "serial_number": "",
+    "qty": 1,
+    "nomor_transaksi": "TRK20261012-0050",
+    "nomor_induk": "POM/LKTP/437/8/2026",
+    "nomor_alokasi": "POM/LKTP/437/8/2026",
+    "tanggal_mulai": "2026-08-07",
+    "tanggal_complete": "2026-10-12",
+    "reason": null,
+    "detail_reason": null,
+    "status_proses": "Complete Return"
+  },
+  {
+    "modul": "MR",
     "nomor_product": "914922128",
     "type_product": "EWW1023P5SC",
     "category_product": "Fabric Care",
+    "serial_number": "",
+    "qty": 1,
+    "nomor_transaksi": "TRK20261012-0050",
+    "nomor_induk": "POM/LKTP/437/8/2026",
+    "nomor_alokasi": "POM/LKTP/437/8/2026",
+    "tanggal_mulai": "2026-08-07",
+    "tanggal_complete": "2026-10-12",
+    "reason": null,
+    "detail_reason": null,
+    "status_proses": "Complete Return"
+  },
+  {
+    "modul": "MR",
+    "nomor_product": "914922375",
+    "type_product": "EWF1124D3EC",
+    "category_product": "",
     "serial_number": "",
     "qty": 1,
     "nomor_transaksi": "TRK20261012-0050",
@@ -18497,41 +18529,9 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "914922375",
-    "type_product": "EWF1124D3EC",
-    "category_product": "",
-    "serial_number": "",
-    "qty": 1,
-    "nomor_transaksi": "TRK20261012-0050",
-    "nomor_induk": "POM/LKTP/437/8/2026",
-    "nomor_alokasi": "POM/LKTP/437/8/2026",
-    "tanggal_mulai": "2026-08-07",
-    "tanggal_complete": "2026-10-12",
-    "reason": null,
-    "detail_reason": null,
-    "status_proses": "Complete Return"
-  },
-  {
-    "modul": "MR",
     "nomor_product": "914922128",
     "type_product": "EWW1023P5SC",
     "category_product": "Fabric Care",
-    "serial_number": "",
-    "qty": 1,
-    "nomor_transaksi": "TRK20261012-0050",
-    "nomor_induk": "POM/LKTP/437/8/2026",
-    "nomor_alokasi": "POM/LKTP/437/8/2026",
-    "tanggal_mulai": "2026-08-07",
-    "tanggal_complete": "2026-10-12",
-    "reason": null,
-    "detail_reason": null,
-    "status_proses": "Complete Return"
-  },
-  {
-    "modul": "MR",
-    "nomor_product": "914922375",
-    "type_product": "EWF1124D3EC",
-    "category_product": "",
     "serial_number": "",
     "qty": 1,
     "nomor_transaksi": "TRK20261012-0050",
@@ -21025,8 +21025,8 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "919090499",
-    "type_product": "EWT8078K6WA",
+    "nomor_product": "919090519",
+    "type_product": "EWS80386WA",
     "category_product": "Fabric Care",
     "serial_number": "55300552",
     "qty": 1,
@@ -21041,8 +21041,8 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "919090519",
-    "type_product": "EWS80386WA",
+    "nomor_product": "919090499",
+    "type_product": "EWT8078K6WA",
     "category_product": "Fabric Care",
     "serial_number": "55300552",
     "qty": 1,
