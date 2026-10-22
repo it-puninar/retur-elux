@@ -4107,8 +4107,8 @@
     "nomor_alokasi": "9304416468",
     "tanggal_mulai": "2026-07-27",
     "tanggal_complete": null,
-    "reason": "2. Masalah Packing Unit/Dus",
-    "detail_reason": "SR_KARTON SOBEK",
+    "reason": "1. Masalah Administratif",
+    "detail_reason": "SR_ADMINISTRATIF",
     "status_proses": "Proses GR IBD"
   },
   {
@@ -4123,8 +4123,8 @@
     "nomor_alokasi": "9304416468",
     "tanggal_mulai": "2026-07-27",
     "tanggal_complete": null,
-    "reason": "1. Masalah Administratif",
-    "detail_reason": "SR_ADMINISTRATIF",
+    "reason": "2. Masalah Packing Unit/Dus",
+    "detail_reason": "SR_KARTON SOBEK",
     "status_proses": "Proses GR IBD"
   },
   {
@@ -5393,8 +5393,8 @@
   },
   {
     "modul": "SR",
-    "nomor_product": "914922074",
-    "type_product": "EWF1024D3WC",
+    "nomor_product": "914922113",
+    "type_product": "EWF1023P5SC",
     "category_product": "Fabric Care",
     "serial_number": "NA",
     "qty": 1,
@@ -5409,8 +5409,8 @@
   },
   {
     "modul": "SR",
-    "nomor_product": "914922113",
-    "type_product": "EWF1023P5SC",
+    "nomor_product": "914922074",
+    "type_product": "EWF1024D3WC",
     "category_product": "Fabric Care",
     "serial_number": "NA",
     "qty": 1,
@@ -6641,22 +6641,6 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "914922074",
-    "type_product": "EWF1024D3WC",
-    "category_product": "Fabric Care",
-    "serial_number": "10628388",
-    "qty": 1,
-    "nomor_transaksi": "TRK20261012-0124",
-    "nomor_induk": "Modern/lktp/197/VI/26",
-    "nomor_alokasi": "TGR/TU/26/004622",
-    "tanggal_mulai": "2026-06-03",
-    "tanggal_complete": "2026-10-12",
-    "reason": null,
-    "detail_reason": "MESIN CUCI BERISIK TIDAK NORMAL",
-    "status_proses": "Complete Return"
-  },
-  {
-    "modul": "MR",
     "nomor_product": "914922079",
     "type_product": "EWF1024D3WC",
     "category_product": "Fabric Care",
@@ -6669,6 +6653,22 @@
     "tanggal_complete": "2026-10-12",
     "reason": null,
     "detail_reason": "finishing cat tidak rapih",
+    "status_proses": "Complete Return"
+  },
+  {
+    "modul": "MR",
+    "nomor_product": "914922074",
+    "type_product": "EWF1024D3WC",
+    "category_product": "Fabric Care",
+    "serial_number": "10628388",
+    "qty": 1,
+    "nomor_transaksi": "TRK20261012-0124",
+    "nomor_induk": "Modern/lktp/197/VI/26",
+    "nomor_alokasi": "TGR/TU/26/004622",
+    "tanggal_mulai": "2026-06-03",
+    "tanggal_complete": "2026-10-12",
+    "reason": null,
+    "detail_reason": "MESIN CUCI BERISIK TIDAK NORMAL",
     "status_proses": "Complete Return"
   },
   {
@@ -18449,22 +18449,6 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "914922128",
-    "type_product": "EWW1023P5SC",
-    "category_product": "Fabric Care",
-    "serial_number": "",
-    "qty": 1,
-    "nomor_transaksi": "TRK20261012-0050",
-    "nomor_induk": "POM/LKTP/437/8/2026",
-    "nomor_alokasi": "POM/LKTP/437/8/2026",
-    "tanggal_mulai": "2026-08-07",
-    "tanggal_complete": "2026-10-12",
-    "reason": null,
-    "detail_reason": null,
-    "status_proses": "Complete Return"
-  },
-  {
-    "modul": "MR",
     "nomor_product": "914922375",
     "type_product": "EWF1124D3EC",
     "category_product": "",
@@ -18529,6 +18513,22 @@
   },
   {
     "modul": "MR",
+    "nomor_product": "914922375",
+    "type_product": "EWF1124D3EC",
+    "category_product": "",
+    "serial_number": "",
+    "qty": 1,
+    "nomor_transaksi": "TRK20261012-0050",
+    "nomor_induk": "POM/LKTP/437/8/2026",
+    "nomor_alokasi": "POM/LKTP/437/8/2026",
+    "tanggal_mulai": "2026-08-07",
+    "tanggal_complete": "2026-10-12",
+    "reason": null,
+    "detail_reason": null,
+    "status_proses": "Complete Return"
+  },
+  {
+    "modul": "MR",
     "nomor_product": "914922128",
     "type_product": "EWW1023P5SC",
     "category_product": "Fabric Care",
@@ -18545,9 +18545,9 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "914922375",
-    "type_product": "EWF1124D3EC",
-    "category_product": "",
+    "nomor_product": "914922128",
+    "type_product": "EWW1023P5SC",
+    "category_product": "Fabric Care",
     "serial_number": "",
     "qty": 1,
     "nomor_transaksi": "TRK20261012-0050",
