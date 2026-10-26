@@ -7821,7 +7821,7 @@
     "tanggal_complete": null,
     "reason": "QUALITY",
     "detail_reason": "barang lecet",
-    "status_proses": "Monitoring Penarikan"
+    "status_proses": "Pendaftaran RS"
   },
   {
     "modul": "MR",
@@ -7837,7 +7837,7 @@
     "tanggal_complete": null,
     "reason": "QUALITY",
     "detail_reason": "otomatisnya rusak cacat vendor",
-    "status_proses": "Monitoring Penarikan"
+    "status_proses": "Pendaftaran RS"
   },
   {
     "modul": "MR",
@@ -7853,7 +7853,7 @@
     "tanggal_complete": null,
     "reason": "ADMINISTRATIVE",
     "detail_reason": "kardus cacat",
-    "status_proses": "Monitoring Penarikan"
+    "status_proses": "Pendaftaran RS"
   },
   {
     "modul": "MR",
@@ -7869,7 +7869,7 @@
     "tanggal_complete": null,
     "reason": "LOGISTICS",
     "detail_reason": "barang pecah",
-    "status_proses": "Monitoring Penarikan"
+    "status_proses": "Pendaftaran RS"
   },
   {
     "modul": "MR",
