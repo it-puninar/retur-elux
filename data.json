@@ -7821,7 +7821,7 @@
     "tanggal_complete": null,
     "reason": "QUALITY",
     "detail_reason": "barang lecet",
-    "status_proses": "Pendaftaran RS"
+    "status_proses": "Proses GR IBD"
   },
   {
     "modul": "MR",
@@ -7837,7 +7837,7 @@
     "tanggal_complete": null,
     "reason": "QUALITY",
     "detail_reason": "otomatisnya rusak cacat vendor",
-    "status_proses": "Pendaftaran RS"
+    "status_proses": "Proses GR IBD"
   },
   {
     "modul": "MR",
@@ -7853,7 +7853,7 @@
     "tanggal_complete": null,
     "reason": "ADMINISTRATIVE",
     "detail_reason": "kardus cacat",
-    "status_proses": "Pendaftaran RS"
+    "status_proses": "Proses GR IBD"
   },
   {
     "modul": "MR",
@@ -7869,7 +7869,7 @@
     "tanggal_complete": null,
     "reason": "LOGISTICS",
     "detail_reason": "barang pecah",
-    "status_proses": "Pendaftaran RS"
+    "status_proses": "Proses GR IBD"
   },
   {
     "modul": "MR",
@@ -17441,7 +17441,7 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "900103562",
+    "nomor_product": "900403561",
     "type_product": "PN333",
     "category_product": "",
     "serial_number": "",
@@ -17457,7 +17457,7 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "900403561",
+    "nomor_product": "900103562",
     "type_product": "PN333",
     "category_product": "",
     "serial_number": "",
@@ -18513,6 +18513,22 @@
   },
   {
     "modul": "MR",
+    "nomor_product": "914922375",
+    "type_product": "EWF1124D3EC",
+    "category_product": "",
+    "serial_number": "",
+    "qty": 1,
+    "nomor_transaksi": "TRK20261012-0050",
+    "nomor_induk": "POM/LKTP/437/8/2026",
+    "nomor_alokasi": "POM/LKTP/437/8/2026",
+    "tanggal_mulai": "2026-08-07",
+    "tanggal_complete": "2026-10-12",
+    "reason": null,
+    "detail_reason": null,
+    "status_proses": "Complete Return"
+  },
+  {
+    "modul": "MR",
     "nomor_product": "914922128",
     "type_product": "EWW1023P5SC",
     "category_product": "Fabric Care",
@@ -18561,41 +18577,25 @@
   },
   {
     "modul": "MR",
+    "nomor_product": "914922375",
+    "type_product": "EWF1124D3EC",
+    "category_product": "",
+    "serial_number": "",
+    "qty": 1,
+    "nomor_transaksi": "TRK20261012-0050",
+    "nomor_induk": "POM/LKTP/437/8/2026",
+    "nomor_alokasi": "POM/LKTP/437/8/2026",
+    "tanggal_mulai": "2026-08-07",
+    "tanggal_complete": "2026-10-12",
+    "reason": null,
+    "detail_reason": null,
+    "status_proses": "Complete Return"
+  },
+  {
+    "modul": "MR",
     "nomor_product": "914922128",
     "type_product": "EWW1023P5SC",
     "category_product": "Fabric Care",
-    "serial_number": "",
-    "qty": 1,
-    "nomor_transaksi": "TRK20261012-0050",
-    "nomor_induk": "POM/LKTP/437/8/2026",
-    "nomor_alokasi": "POM/LKTP/437/8/2026",
-    "tanggal_mulai": "2026-08-07",
-    "tanggal_complete": "2026-10-12",
-    "reason": null,
-    "detail_reason": null,
-    "status_proses": "Complete Return"
-  },
-  {
-    "modul": "MR",
-    "nomor_product": "914922375",
-    "type_product": "EWF1124D3EC",
-    "category_product": "",
-    "serial_number": "",
-    "qty": 1,
-    "nomor_transaksi": "TRK20261012-0050",
-    "nomor_induk": "POM/LKTP/437/8/2026",
-    "nomor_alokasi": "POM/LKTP/437/8/2026",
-    "tanggal_mulai": "2026-08-07",
-    "tanggal_complete": "2026-10-12",
-    "reason": null,
-    "detail_reason": null,
-    "status_proses": "Complete Return"
-  },
-  {
-    "modul": "MR",
-    "nomor_product": "914922375",
-    "type_product": "EWF1124D3EC",
-    "category_product": "",
     "serial_number": "",
     "qty": 1,
     "nomor_transaksi": "TRK20261012-0050",
@@ -21089,8 +21089,8 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "919090519",
-    "type_product": "EWS80386WA",
+    "nomor_product": "919090499",
+    "type_product": "EWT8078K6WA",
     "category_product": "Fabric Care",
     "serial_number": "55300552",
     "qty": 1,
@@ -21105,8 +21105,8 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "919090499",
-    "type_product": "EWT8078K6WA",
+    "nomor_product": "919090519",
+    "type_product": "EWS80386WA",
     "category_product": "Fabric Care",
     "serial_number": "55300552",
     "qty": 1,
