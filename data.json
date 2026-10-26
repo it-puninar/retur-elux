@@ -4075,8 +4075,8 @@
     "nomor_alokasi": "9304416468",
     "tanggal_mulai": "2026-07-27",
     "tanggal_complete": null,
-    "reason": "1. Masalah Administratif",
-    "detail_reason": "SR_ADMINISTRATIF",
+    "reason": "2. Masalah Packing Unit/Dus",
+    "detail_reason": "SR_KARTON SOBEK",
     "status_proses": "Proses GR IBD"
   },
   {
@@ -4091,8 +4091,8 @@
     "nomor_alokasi": "9304416468",
     "tanggal_mulai": "2026-07-27",
     "tanggal_complete": null,
-    "reason": "2. Masalah Packing Unit/Dus",
-    "detail_reason": "SR_KARTON SOBEK",
+    "reason": "1. Masalah Administratif",
+    "detail_reason": "SR_ADMINISTRATIF",
     "status_proses": "Proses GR IBD"
   },
   {
@@ -9825,8 +9825,8 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "956006559",
-    "type_product": "ESM053C2WAE",
+    "nomor_product": "956006523",
+    "type_product": "ESM053C2WAI",
     "category_product": "Home Comfort MA",
     "serial_number": "",
     "qty": 1,
@@ -9841,8 +9841,8 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "956006523",
-    "type_product": "ESM053C2WAI",
+    "nomor_product": "956006559",
+    "type_product": "ESM053C2WAE",
     "category_product": "Home Comfort MA",
     "serial_number": "",
     "qty": 1,
@@ -17457,7 +17457,7 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "900103562",
+    "nomor_product": "900403561",
     "type_product": "PN333",
     "category_product": "",
     "serial_number": "",
@@ -17473,7 +17473,7 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "900403561",
+    "nomor_product": "900103562",
     "type_product": "PN333",
     "category_product": "",
     "serial_number": "",
@@ -21089,8 +21089,8 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "919090499",
-    "type_product": "EWT8078K6WA",
+    "nomor_product": "919090519",
+    "type_product": "EWS80386WA",
     "category_product": "Fabric Care",
     "serial_number": "55300552",
     "qty": 1,
@@ -21105,8 +21105,8 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "919090519",
-    "type_product": "EWS80386WA",
+    "nomor_product": "919090499",
+    "type_product": "EWT8078K6WA",
     "category_product": "Fabric Care",
     "serial_number": "55300552",
     "qty": 1,
