@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Proses Inspeksi (Mobile) — RS ELUX</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<style>
+  :root {
+    --navy: #1a237e;
+    --navy-dark: #10174f;
+    --purple: #7c3aed;
+    --green: #16a34a;
+    --border: #e0e0e0;
+    --muted: #6b7280;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #f3f4f6;
+    color: #1f2330;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+  }
+  .topbar {
+    background: linear-gradient(135deg, var(--navy), var(--navy-dark));
+    color: white;
+    padding: 14px 18px 16px;
+    position: sticky; top: 0; z-index: 30;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  }
+  .topbar-row1 { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .topbar .brand { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .topbar .logo { width: 30px; height: 30px; background: rgba(255,255,255,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .topbar .app { font-size: 12.5px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; opacity: 0.85; white-space: nowrap; }
+  .topbar .counter { font-size: 11.5px; font-weight: 600; opacity: 0.95; text-align: right; white-space: nowrap; flex-shrink: 0; background: rgba(255,255,255,0.14); padding: 5px 10px; border-radius: 20px; }
+  .topbar-title { font-size: 18px; font-weight: 800; line-height: 1.3; letter-spacing: 0.2px; }
+
+  .wrap { max-width: 560px; margin: 0 auto; padding: 16px; padding-bottom: 48px; }
+
+  .banner { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 10px 14px; border-radius: 8px; font-size: 12.5px; line-height: 1.6; margin-bottom: 16px; }
+  .banner.warn { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+
+  .card { background: white; border-radius: var(--radius); box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 16px; overflow: hidden; }
+  .card-pad { padding: 18px; }
+
+  .btn { appearance: none; border: none; border-radius: 9px; cursor: pointer; font-size: 14px; font-weight: 700; padding: 13px 16px; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 7px; transition: transform 0.05s ease, opacity 0.15s ease; width: 100%; }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-primary { background: var(--navy); color: white; }
+  .btn-scan-big { background: var(--navy); color: white; font-size: 16px; padding: 18px; }
+  .btn-secondary { background: white; border: 1px solid #ccc; color: #555; }
+  .btn-success { background: var(--green); color: white; }
+  .btn-row { display: flex; gap: 10px; }
+  .btn-row .btn { flex: 1; }
+
+  /* ===== Modal Scan QR (kamera) -- sama persis pattern track-trace-scan.html ===== */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(10,12,25,0.78); display: none; align-items: center; justify-content: center; z-index: 200; padding: 14px; }
+  .modal-overlay.open { display: flex; }
+  .scan-modal { background: #0f1226; border-radius: 16px; width: 100%; max-width: 440px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5); display: flex; flex-direction: column; max-height: 92vh; }
+  .scan-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; color: white; }
+  .scan-head h3 { margin: 0; font-size: 15px; font-weight: 700; }
+  .scan-close { background: rgba(255,255,255,0.12); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+  .scan-viewport { position: relative; width: 100%; aspect-ratio: 1 / 1; background: #000; overflow: hidden; }
+  #qr-reader { width: 100%; height: 100%; }
+  #qr-reader video { width: 100% !important; height: 100% !important; object-fit: cover; }
+  #qr-reader__dashboard, #qr-reader__header_message, #qr-reader__scan_region img { display: none !important; }
+  #qr-reader__scan_region { position: relative !important; }
+  .scan-frame { position: absolute; inset: 14%; border: 3px solid rgba(255,255,255,0.85); border-radius: 16px; pointer-events: none; box-shadow: 0 0 0 2000px rgba(0,0,0,0.35); }
+  .scan-corner { position: absolute; width: 26px; height: 26px; }
+  .scan-corner.tl { top: -3px; left: -3px; border-top: 4px solid #22c55e; border-left: 4px solid #22c55e; border-radius: 8px 0 0 0; }
+  .scan-corner.tr { top: -3px; right: -3px; border-top: 4px solid #22c55e; border-right: 4px solid #22c55e; border-radius: 0 8px 0 0; }
+  .scan-corner.bl { bottom: -3px; left: -3px; border-bottom: 4px solid #22c55e; border-left: 4px solid #22c55e; border-radius: 0 0 0 8px; }
+  .scan-corner.br { bottom: -3px; right: -3px; border-bottom: 4px solid #22c55e; border-right: 4px solid #22c55e; border-radius: 0 0 8px 0; }
+  .scan-laser { position: absolute; left: 14%; right: 14%; top: 14%; height: 2px; background: linear-gradient(90deg, transparent, #22c55e, transparent); box-shadow: 0 0 8px 1px #22c55e; animation: scanMove 2.1s ease-in-out infinite; }
+  @keyframes scanMove { 0% { top: 14%; } 50% { top: 84%; } 100% { top: 14%; } }
+  .scan-status { position: absolute; bottom: 14px; left: 14px; right: 14px; text-align: center; color: white; font-size: 12.5px; background: rgba(0,0,0,0.45); padding: 8px 10px; border-radius: 8px; backdrop-filter: blur(2px); }
+  .scan-result-flash { position: absolute; inset: 0; background: rgba(34,197,94,0.35); display: none; align-items: center; justify-content: center; }
+  .scan-result-flash.show { display: flex; animation: flashFade 0.5s ease forwards; }
+  @keyframes flashFade { from { opacity: 1; } to { opacity: 0; } }
+  .scan-controls { padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+  .scan-controls-row { display: flex; gap: 10px; }
+  .scan-controls-row .btn { flex: 1; }
+  .cam-error { display: none; color: #fca5a5; font-size: 12.5px; text-align: center; padding: 14px 16px; line-height: 1.6; }
+  .cam-error.show { display: block; }
+
+  /* ===== Kartu unit hasil scan ===== */
+  .produk-header { background: #f0f7ff; border: 1px solid #d0e3f1; border-radius: var(--radius); padding: 16px 18px; margin-bottom: 16px; }
+  .produk-header .kode { font-size: 18px; color: var(--navy); font-weight: 800; word-break: break-word; }
+  .produk-header .sub { font-size: 12.5px; color: #4b5563; margin-top: 4px; }
+  .produk-header .doc { font-size: 11.5px; color: var(--purple); font-weight: 700; margin-top: 6px; }
+
+  .ro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; padding: 16px 18px; border-bottom: 1px solid #eee; }
+  .ro-item { display: flex; flex-direction: column; }
+  .ro-item .lbl { font-size: 10.5px; color: #888; text-transform: uppercase; font-weight: 700; margin-bottom: 3px; }
+  .ro-item .val { font-size: 13px; color: #333; }
+
+  .form-grid { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
+  .field label { font-size: 11px; color: #555; text-transform: uppercase; font-weight: 700; letter-spacing: 0.3px; margin-bottom: 6px; display: block; }
+  .field label .wajib { color: #dc2626; margin-left: 3px; }
+  .field select, .field input[type="text"] { padding: 11px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; background: white; color: #222; width: 100%; font-family: inherit; }
+  .field select:focus, .field input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(26,35,126,0.12); }
+  .field.err select, .field.err input { border-color: #dc2626; }
+
+  .foto-row { display: flex; align-items: center; gap: 12px; }
+  .foto-thumb { width: 54px; height: 54px; border-radius: 8px; object-fit: cover; border: 1px solid #ddd; flex-shrink: 0; }
+  .foto-ok { font-size: 12px; color: var(--green); font-weight: 600; }
+
+  .empty-state { background: white; border-radius: var(--radius); box-shadow: 0 1px 3px rgba(0,0,0,0.08); text-align: center; padding: 44px 20px; margin-bottom: 16px; }
+  .empty-state .emoji { font-size: 40px; margin-bottom: 10px; }
+  .empty-state .title { font-size: 15px; font-weight: 700; color: #374151; margin-bottom: 6px; }
+  .empty-state .sub { font-size: 13px; color: #6b7280; max-width: 420px; margin: 0 auto; }
+
+  .hidden { display: none !important; }
+
+  /* ===== Layar PIN ===== */
+  .pin-screen { max-width: 340px; margin: 60px auto 0; text-align: center; padding: 0 16px; }
+  .pin-screen .emoji { font-size: 44px; margin-bottom: 14px; }
+  .pin-screen h2 { font-size: 17px; color: var(--navy); margin: 0 0 6px; }
+  .pin-screen p { font-size: 13px; color: #6b7280; margin: 0 0 22px; line-height: 1.6; }
+  .pin-input {
+    width: 100%; text-align: center; letter-spacing: 14px; font-size: 26px; font-weight: 700;
+    padding: 14px 12px 14px 26px; border: 1.5px solid #ccc; border-radius: 10px; color: #1f2330;
+    font-family: inherit; margin-bottom: 14px;
+  }
+  .pin-input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(26,35,126,0.12); }
+  .pin-input.err { border-color: #dc2626; }
+  .pin-error { color: #dc2626; font-size: 12.5px; margin-bottom: 12px; min-height: 16px; }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-row1">
+      <div class="brand">
+        <div class="logo">🔍</div>
+        <div class="app">RS ELUX</div>
+      </div>
+      <div class="counter" id="counter">Sesi ini: 0 unit</div>
+    </div>
+    <div class="topbar-title">📋 Proses Inspeksi (Mobile)</div>
+  </div>
+
+  <div class="wrap" id="appWrap" style="display:none;">
+    <div class="banner">
+      Scan QR unit (label GS1 hasil Print QR), isi Grade Kerusakan &amp; Hasil Inspeksi, lalu ambil foto langsung dari kamera. Data tersimpan langsung ke sistem yang sama dengan Proses Inspeksi di dashboard.
+    </div>
+    <div class="banner warn">
+      Halaman ini CUMA menyimpan data per-unit. Tombol "KIRIM" (pindah status ke Complete) tetap harus dilakukan lewat dashboard, setelah semua unit di surat tarik itu selesai diinspeksi.
+    </div>
+
+    <button class="btn btn-scan-big" id="btnScan">📷 Scan QR Code Unit</button>
+
+    <div id="hasilWrap" style="margin-top:16px;"></div>
+  </div>
+
+  <div class="pin-screen" id="pinScreen">
+    <div class="emoji">🔒</div>
+    <h2>Masukkan PIN</h2>
+    <p>Halaman ini khusus tim Proses Inspeksi. Masukkan PIN 4 digit yang dibagikan supervisor untuk masuk.</p>
+    <input class="pin-input" id="inpPin" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="••••" autocomplete="off" />
+    <div class="pin-error" id="pinError"></div>
+    <button class="btn btn-primary" id="btnMasukPin">Masuk</button>
+  </div>
+
+  <!-- ===== MODAL SCAN QR (KAMERA) ===== -->
+  <div class="modal-overlay" id="modalScan">
+    <div class="scan-modal">
+      <div class="scan-head">
+        <h3>📷 Scan QR Code Unit</h3>
+        <button class="scan-close" id="btnCloseScan">✕</button>
+      </div>
+      <div class="scan-viewport">
+        <div id="qr-reader"></div>
+        <div class="scan-frame">
+          <div class="scan-corner tl"></div>
+          <div class="scan-corner tr"></div>
+          <div class="scan-corner bl"></div>
+          <div class="scan-corner br"></div>
+        </div>
+        <div class="scan-laser" id="scanLaser"></div>
+        <div class="scan-result-flash" id="scanFlash"></div>
+        <div class="scan-status" id="scanStatus">Arahkan kamera ke QR code pada label unit…</div>
+        <div class="cam-error" id="camError">
+          Tidak bisa mengakses kamera. Pastikan browser diizinkan mengakses kamera, dan halaman ini dibuka lewat HTTPS (atau localhost).
+        </div>
+      </div>
+      <div class="scan-controls">
+        <div class="scan-controls-row">
+          <button class="btn btn-secondary" id="btnSwitchCam">🔄 Ganti Kamera</button>
+          <button class="btn btn-secondary" id="btnTorch">🔦 Flash</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ======================================================================
+   LOGIN PIN -- BUKAN Quick Apps SSO. Halaman ini dibuka langsung dari HP
+   (bookmark/link), di luar alur klik-tile portal Quick Apps -- redirect
+   SSO Quick Apps terbukti tidak balik membawa token utk kasus itu, jadi
+   dipakai PIN 4 digit (diset admin lewat MOBILE_INSPEKSI_PIN di .env
+   server) sbg gantinya. PIN dikirim di header X-Mobile-Pin tiap request
+   (lihat apiFetch), dicocokkan backend (requireAuth di auth.go) -- bukan
+   dicek di JS sini (kalau cuma dicek di sini, orang bisa baca source &
+   lewati sama sekali; backend yg jadi penjaga sebenarnya).
+   ====================================================================== */
+const PIN_KEY = 'mobile_pin';
+
+// API_BASE ABSOLUT (bukan dihitung relatif dari lokasi file ini) -- beda
+// dari track-trace-scan.html, halaman ini dimaksudkan di-hosting DI LUAR
+// server app (mis. GitHub Pages), jadi tidak bisa mengandalkan "file ini
+// & backend-nya satu domain/path yang sama". Backend tetap dipanggil
+// LANGSUNG ke server aslinya (bukan data statis) -- asumsinya device yang
+// buka halaman ini selalu ada di jaringan yang sama dgn server itu, DAN
+// endpoint /retur_elux/api/* terbukti bisa dipanggil langsung (beda dgn
+// navigasi /retur_elux/<halaman>.html yang kena redirect portal Quick Apps).
+// CORS_ORIGINS di .env server WAJIB ikut mendaftarkan origin tempat halaman
+// ini di-hosting (lihat withCORS di backend-go/main.go).
+const API_BASE = 'https://quick-appsdev2.puninar.com/retur_elux/api';
+
+async function apiFetch(path, options = {}) {
+  const pin = localStorage.getItem(PIN_KEY);
+  const headers = Object.assign({}, options.headers, pin ? { 'X-Mobile-Pin': pin } : {});
+  let res;
+  try {
+    res = await fetch(`${API_BASE}${path}`, Object.assign({}, options, { headers }));
+  } catch (e) {
+    throw new Error('Tidak bisa menghubungi server API di ' + API_BASE + ' (cek koneksi jaringan lokal/kantor).');
+  }
+  if (res.status === 401) {
+    localStorage.removeItem(PIN_KEY);
+    tampilkanLayarPin('PIN salah atau belum diisi, coba lagi.');
+    throw new Error('PIN tidak valid.');
+  }
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok || body.success === false) {
+    throw new Error(body.message || `Gagal (HTTP ${res.status})`);
+  }
+  return body;
+}
+
+function tampilkanLayarPin(pesanError) {
+  document.getElementById('appWrap').style.display = 'none';
+  document.getElementById('pinScreen').style.display = '';
+  const inp = document.getElementById('inpPin');
+  const err = document.getElementById('pinError');
+  err.textContent = pesanError || '';
+  inp.classList.toggle('err', !!pesanError);
+  inp.value = '';
+  inp.focus();
+}
+
+function tampilkanApp() {
+  document.getElementById('pinScreen').style.display = 'none';
+  document.getElementById('appWrap').style.display = '';
+}
+
+async function cobaMasukPin() {
+  const inp = document.getElementById('inpPin');
+  const pin = inp.value.trim();
+  const err = document.getElementById('pinError');
+  if (!/^[0-9]{4}$/.test(pin)) {
+    err.textContent = 'PIN harus 4 digit angka.';
+    inp.classList.add('err');
+    return;
+  }
+  localStorage.setItem(PIN_KEY, pin);
+  const btn = document.getElementById('btnMasukPin');
+  btn.disabled = true; btn.textContent = 'Memeriksa...';
+  try {
+    await apiFetch('/mobile-auth/ping');
+    tampilkanApp();
+  } catch (e) {
+    // apiFetch sudah menampilkan layar PIN + pesan error-nya sendiri kalau 401
+  } finally {
+    btn.disabled = false; btn.textContent = 'Masuk';
+  }
+}
+
+document.getElementById('btnMasukPin').addEventListener('click', cobaMasukPin);
+document.getElementById('inpPin').addEventListener('keydown', (e) => { if (e.key === 'Enter') cobaMasukPin(); });
+document.getElementById('inpPin').addEventListener('input', (e) => {
+  e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+});
+
+// PIN sudah pernah disimpan sebelumnya (sesi lalu) -- langsung coba pakai,
+// jangan tanya ulang kalau masih valid.
+if (localStorage.getItem(PIN_KEY)) {
+  apiFetch('/mobile-auth/ping').then(tampilkanApp).catch(() => {});
+} else {
+  tampilkanLayarPin();
+}
+
+const GRADE_KERUSAKAN_OPTIONS = [
+  '0010 - good', '0020 - sample', '0030 - Open', '0040 - Torn',
+  '0050 - Graded', '0060 - Dismantle', '0070 - Scrap', '0080 - damage inbound',
+];
+
+/* ====================== STATE SESI ====================== */
+let unitAktif = null;       // { akt_produk, nomor_surat_tarik, modul }
+let fotoFile = null;        // File hasil ambil foto kamera, belum diupload
+let jumlahSesi = 0;
+function updateCounter() { document.getElementById('counter').textContent = `Sesi ini: ${jumlahSesi} unit`; }
+
+/* ====================== "(240)PRODUCT(21)SN" ====================== */
+function pisahKodeUnit(teks) {
+  const bersih = (teks || '').trim();
+  const idx = bersih.indexOf('(21)');
+  if (!bersih || idx === -1) return { np: '', sn: '' };
+  return { np: bersih.slice(0, idx).replace(/^\(240\)/, ''), sn: bersih.slice(idx + 4) };
+}
+
+/* ====================== CARI UNIT DI TAHAP PROSES INSPEKSI ====================== */
+async function cariUnit(np, sn) {
+  const wrap = document.getElementById('hasilWrap');
+  wrap.innerHTML = `<div class="empty-state"><div class="emoji">⏳</div><div class="title">Mencari unit…</div></div>`;
+  try {
+    const body = await apiFetch(`/akt-produk/cari-inspeksi?nomor_product=${encodeURIComponent(np)}&serial_number=${encodeURIComponent(sn)}`);
+    unitAktif = body.data;
+    fotoFile = null;
+    renderForm();
+  } catch (err) {
+    wrap.innerHTML = `
+      <div class="empty-state">
+        <div class="emoji">⚠️</div>
+        <div class="title">Unit tidak ditemukan</div>
+        <div class="sub">${err.message}</div>
+      </div>`;
+  }
+}
+
+/* ====================== RENDER FORM INSPEKSI ====================== */
+function renderForm() {
+  const a = unitAktif.akt_produk;
+  const wrap = document.getElementById('hasilWrap');
+  wrap.innerHTML = `
+    <div class="card">
+      <div class="produk-header">
+        <div class="kode">${a.product?.nomor_product || '-'} — SN ${a.serial_number}</div>
+        <div class="sub">${a.product?.type_product || '-'} · ${a.product?.category_product || '-'}</div>
+        <div class="doc">${unitAktif.modul === 'SR' ? 'DO' : 'Surat Tarik'}: ${unitAktif.nomor_surat_tarik || '-'}</div>
+      </div>
+      <div class="ro-grid">
+        <div class="ro-item"><span class="lbl">Qty</span><span class="val">${a.qty ?? '-'}</span></div>
+        <div class="ro-item"><span class="lbl">Reason Penarikan</span><span class="val">${a.reason_penarikan || '-'}</span></div>
+      </div>
+      <div class="form-grid">
+        <div class="field" id="fieldGrade">
+          <label>Grade Kerusakan<span class="wajib">*</span></label>
+          <select id="inpGrade">
+            <option value="" disabled>-- Pilih --</option>
+            ${GRADE_KERUSAKAN_OPTIONS.map(o => `<option value="${o}" ${a.grade_kerusakan === o ? 'selected' : ''}>${o}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field" id="fieldHasil">
+          <label>Hasil Inspeksi<span class="wajib">*</span></label>
+          <input type="text" id="inpHasil" value="${a.hasil_inspeksi || ''}" placeholder="Ketik hasil inspeksi..." />
+        </div>
+        <div class="field" id="fieldFoto">
+          <label>Attachment Inspeksi (Foto)<span class="wajib">*</span></label>
+          <input type="file" id="inpFoto" accept="image/*" capture="environment" style="display:none;" />
+          <div class="foto-row">
+            <button type="button" class="btn btn-secondary" style="width:auto;" id="btnAmbilFoto">📷 Ambil Foto</button>
+            <img id="fotoThumb" class="foto-thumb hidden" />
+            <span class="foto-ok hidden" id="fotoOkLabel">✅ Foto siap</span>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" id="btnBatalUnit">Scan Lagi</button>
+          <button class="btn btn-success" id="btnSimpanUnit">💾 Simpan</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  if (a.attachment_inspeksi) {
+    document.getElementById('fotoOkLabel').classList.remove('hidden');
+  }
+
+  document.getElementById('btnAmbilFoto').addEventListener('click', () => document.getElementById('inpFoto').click());
+  document.getElementById('inpFoto').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    fotoFile = file;
+    const thumb = document.getElementById('fotoThumb');
+    thumb.src = URL.createObjectURL(file);
+    thumb.classList.remove('hidden');
+    document.getElementById('fotoOkLabel').classList.remove('hidden');
+    document.getElementById('fieldFoto').classList.remove('err');
+  });
+  document.getElementById('btnBatalUnit').addEventListener('click', () => { unitAktif = null; fotoFile = null; bukaScan(); });
+  document.getElementById('btnSimpanUnit').addEventListener('click', simpanUnit);
+}
+
+/* ====================== SIMPAN (PUT akt-produk + POST attachment) ====================== */
+async function simpanUnit() {
+  const grade = document.getElementById('inpGrade').value;
+  const hasil = document.getElementById('inpHasil').value.trim();
+  const sudahAdaFotoLama = !!unitAktif.akt_produk.attachment_inspeksi;
+
+  let adaError = false;
+  document.getElementById('fieldGrade').classList.toggle('err', !grade); if (!grade) adaError = true;
+  document.getElementById('fieldHasil').classList.toggle('err', !hasil); if (!hasil) adaError = true;
+  const perluFoto = !fotoFile && !sudahAdaFotoLama;
+  document.getElementById('fieldFoto').classList.toggle('err', perluFoto); if (perluFoto) adaError = true;
+  if (adaError) { alert('Lengkapi Grade Kerusakan, Hasil Inspeksi, dan Foto dulu sebelum disimpan.'); return; }
+
+  const btn = document.getElementById('btnSimpanUnit');
+  btn.disabled = true; btn.textContent = 'Menyimpan...';
+  try {
+    await apiFetch(`/akt-produk/${unitAktif.akt_produk.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ grade_kerusakan: grade, hasil_inspeksi: hasil }),
+    });
+    if (fotoFile) {
+      const formData = new FormData();
+      formData.append('attachment_inspeksi', fotoFile);
+      await apiFetch(`/akt-produk/${unitAktif.akt_produk.id}/attachment-inspeksi`, { method: 'POST', body: formData });
+    }
+    jumlahSesi += 1;
+    updateCounter();
+    navigator.vibrate?.(80);
+    document.getElementById('hasilWrap').innerHTML = `
+      <div class="empty-state">
+        <div class="emoji">✅</div>
+        <div class="title">Tersimpan!</div>
+        <div class="sub">${unitAktif.akt_produk.product?.nomor_product || ''} — SN ${unitAktif.akt_produk.serial_number} sudah diinspeksi.</div>
+      </div>`;
+    unitAktif = null; fotoFile = null;
+    setTimeout(bukaScan, 700);
+  } catch (err) {
+    alert('❌ Gagal menyimpan: ' + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = '💾 Simpan';
+  }
+}
+
+/* ======================================================================
+   SCAN QR — KAMERA (html5-qrcode), sama persis pattern track-trace-scan.html.
+   ====================================================================== */
+const modalScan = document.getElementById('modalScan');
+const scanStatus = document.getElementById('scanStatus');
+const scanFlash = document.getElementById('scanFlash');
+const camError = document.getElementById('camError');
+let html5Qr = null;
+let kameraList = [];
+let kameraIndex = 0;
+let torchMenyala = false;
+let sudahProsesScan = false;
+
+function prosesKodeHasilScan(teks) {
+  if (sudahProsesScan) return;
+  const { np, sn } = pisahKodeUnit(teks);
+  if (!np || !sn) {
+    scanStatus.textContent = `Kode "${teks}" tidak dikenali. Format: (240)NOMOR PRODUCT(21)SERIAL NUMBER`;
+    return;
+  }
+  sudahProsesScan = true;
+  scanFlash.classList.add('show');
+  scanStatus.textContent = `✅ Terbaca: ${np} — ${sn}`;
+  navigator.vibrate?.(80);
+  setTimeout(() => { tutupScan(); cariUnit(np, sn); }, 400);
+}
+
+async function mulaiKamera() {
+  camError.classList.remove('show');
+  sudahProsesScan = false;
+  scanStatus.textContent = 'Meminta izin kamera…';
+  try { kameraList = await Html5Qrcode.getCameras(); } catch (e) { kameraList = []; }
+  if (kameraList.length) {
+    const idxBack = kameraList.findIndex(c => /back|belakang|environment|rear/i.test(c.label));
+    kameraIndex = idxBack !== -1 ? idxBack : 0;
+  }
+  html5Qr = new Html5Qrcode('qr-reader', false);
+  const config = { fps: 10, qrbox: { width: 230, height: 230 }, aspectRatio: 1.0 };
+  const target = kameraList.length ? (kameraList[kameraIndex]?.id || { facingMode: 'environment' }) : { facingMode: 'environment' };
+  try {
+    await html5Qr.start(target, config, (decodedText) => prosesKodeHasilScan(decodedText), () => {});
+    scanStatus.textContent = 'Arahkan kamera ke QR code pada label unit…';
+  } catch (err) {
+    console.error('Gagal membuka kamera:', err);
+    camError.classList.add('show');
+    scanStatus.textContent = '';
+  }
+}
+async function hentikanKamera() {
+  if (html5Qr) {
+    try { await html5Qr.stop(); html5Qr.clear(); } catch (e) {}
+    html5Qr = null;
+  }
+}
+function bukaScan() { modalScan.classList.add('open'); document.body.style.overflow = 'hidden'; mulaiKamera(); }
+function tutupScan() { modalScan.classList.remove('open'); document.body.style.overflow = ''; hentikanKamera(); }
+
+document.getElementById('btnScan').addEventListener('click', bukaScan);
+document.getElementById('btnCloseScan').addEventListener('click', tutupScan);
+modalScan.addEventListener('click', (e) => { if (e.target === modalScan) tutupScan(); });
+document.getElementById('btnSwitchCam').addEventListener('click', async () => {
+  if (kameraList.length < 2) { scanStatus.textContent = 'Cuma ada 1 kamera yang terdeteksi.'; return; }
+  kameraIndex = (kameraIndex + 1) % kameraList.length;
+  await hentikanKamera();
+  mulaiKamera();
+});
+document.getElementById('btnTorch').addEventListener('click', async () => {
+  if (!html5Qr) return;
+  try {
+    torchMenyala = !torchMenyala;
+    await html5Qr.applyVideoConstraints({ advanced: [{ torch: torchMenyala }] });
+  } catch (e) {
+    scanStatus.textContent = 'Flash tidak didukung di kamera/browser ini.';
+    torchMenyala = false;
+  }
+});
+
+updateCounter();
+</script>
+</body>
+</html>
