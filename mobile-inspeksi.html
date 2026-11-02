@@ -112,6 +112,22 @@
   .empty-state .title { font-size: 15px; font-weight: 700; color: #374151; margin-bottom: 6px; }
   .empty-state .sub { font-size: 13px; color: #6b7280; max-width: 420px; margin: 0 auto; }
 
+  /* ===== Daftar unit Proses Inspeksi + search manual ===== */
+  .cari-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .cari-row input { flex: 1; padding: 11px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; font-family: inherit; background: white; color: #222; }
+  .cari-row input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(26,35,126,0.12); }
+  .btn-refresh { width: auto; flex-shrink: 0; padding: 11px 14px; background: white; border: 1px solid #ccc; color: #555; border-radius: 8px; }
+  .daftar-info { font-size: 11.5px; color: #888; margin: -4px 0 12px; }
+  .unit-card { background: white; border-radius: var(--radius); box-shadow: 0 1px 3px rgba(0,0,0,0.08); padding: 14px 16px; margin-bottom: 10px; cursor: pointer; }
+  .unit-card:active { transform: scale(0.99); }
+  .unit-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+  .unit-doc { font-size: 11px; color: var(--purple); font-weight: 700; }
+  .unit-badge { font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+  .unit-badge.ok { background: #dcfce7; color: #166534; }
+  .unit-badge.pending { background: #fef3c7; color: #92400e; }
+  .unit-kode { font-size: 15px; color: var(--navy); font-weight: 800; word-break: break-word; }
+  .unit-sub { font-size: 12.5px; color: #4b5563; margin-top: 2px; }
+
   .hidden { display: none !important; }
 
   /* ===== Layar PIN ===== */
@@ -144,15 +160,23 @@
 
   <div class="wrap" id="appWrap" style="display:none;">
     <div class="banner">
-      Scan QR unit (label GS1 hasil Print QR), isi Grade Kerusakan &amp; Hasil Inspeksi, lalu ambil foto langsung dari kamera. Data tersimpan langsung ke sistem yang sama dengan Proses Inspeksi di dashboard.
+      Cari unit dari daftar di bawah, ketik manual (Nomor Product/Serial Number/Nomor Surat Tarik), atau scan QR label unit. Isi Grade Kerusakan &amp; Hasil Inspeksi, ambil foto dari kamera, lalu Simpan -- langsung ke sistem yang sama dengan Proses Inspeksi di dashboard.
     </div>
     <div class="banner warn">
       Halaman ini CUMA menyimpan data per-unit. Tombol "KIRIM" (pindah status ke Complete) tetap harus dilakukan lewat dashboard, setelah semua unit di surat tarik itu selesai diinspeksi.
     </div>
 
-    <button class="btn btn-scan-big" id="btnScan">📷 Scan QR Code Unit</button>
+    <div id="viewList">
+      <div class="cari-row">
+        <input type="text" id="inpCari" placeholder="Cari Nomor Product / Serial Number / Nomor Surat Tarik..." autocomplete="off" />
+        <button type="button" class="btn-refresh" id="btnRefreshDaftar" title="Muat ulang daftar">↻</button>
+      </div>
+      <button class="btn btn-scan-big" id="btnScan" style="margin-bottom:14px;">📷 Scan QR Code Unit</button>
+      <div class="daftar-info" id="daftarInfo"></div>
+      <div id="daftarWrap"></div>
+    </div>
 
-    <div id="hasilWrap" style="margin-top:16px;"></div>
+    <div id="viewForm" class="hidden"></div>
   </div>
 
   <div class="pin-screen" id="pinScreen">
@@ -272,6 +296,7 @@ async function cobaMasukPin() {
   try {
     await apiFetch('/mobile-auth/ping');
     tampilkanApp();
+    muatDaftarInspeksi();
   } catch (e) {
     // apiFetch sudah menampilkan layar PIN + pesan error-nya sendiri kalau 401
   } finally {
@@ -288,7 +313,7 @@ document.getElementById('inpPin').addEventListener('input', (e) => {
 // PIN sudah pernah disimpan sebelumnya (sesi lalu) -- langsung coba pakai,
 // jangan tanya ulang kalau masih valid.
 if (localStorage.getItem(PIN_KEY)) {
-  apiFetch('/mobile-auth/ping').then(tampilkanApp).catch(() => {});
+  apiFetch('/mobile-auth/ping').then(() => { tampilkanApp(); muatDaftarInspeksi(); }).catch(() => {});
 } else {
   tampilkanLayarPin();
 }
@@ -312,9 +337,83 @@ function pisahKodeUnit(teks) {
   return { np: bersih.slice(0, idx).replace(/^\(240\)/, ''), sn: bersih.slice(idx + 4) };
 }
 
-/* ====================== CARI UNIT DI TAHAP PROSES INSPEKSI ====================== */
+/* ====================== VIEW: DAFTAR vs FORM ====================== */
+function tampilkanDaftar() {
+  document.getElementById('viewList').classList.remove('hidden');
+  document.getElementById('viewForm').classList.add('hidden');
+}
+function tampilkanFormView() {
+  document.getElementById('viewList').classList.add('hidden');
+  document.getElementById('viewForm').classList.remove('hidden');
+}
+
+/* ====================== DAFTAR SEMUA UNIT PROSES INSPEKSI ====================== */
+let daftarUnit = [];
+
+function lengkapUnit(a) {
+  return !!(a.grade_kerusakan && a.hasil_inspeksi && a.attachment_inspeksi);
+}
+
+async function muatDaftarInspeksi() {
+  const wrap = document.getElementById('daftarWrap');
+  wrap.innerHTML = `<div class="empty-state"><div class="emoji">⏳</div><div class="title">Memuat daftar…</div></div>`;
+  try {
+    const body = await apiFetch('/akt-produk/daftar-inspeksi');
+    daftarUnit = body.data || [];
+    renderDaftar();
+  } catch (err) {
+    wrap.innerHTML = `<div class="empty-state"><div class="emoji">⚠️</div><div class="title">Gagal memuat daftar</div><div class="sub">${err.message}</div></div>`;
+  }
+}
+
+function renderDaftar() {
+  const wrap = document.getElementById('daftarWrap');
+  const info = document.getElementById('daftarInfo');
+  const kunci = document.getElementById('inpCari').value.trim().toLowerCase();
+  const tampil = !kunci ? daftarUnit : daftarUnit.filter((it) => {
+    const gabungan = [it.product?.nomor_product, it.serial_number, it.nomor_surat_tarik].join(' ').toLowerCase();
+    return gabungan.includes(kunci);
+  });
+  info.textContent = `${tampil.length} dari ${daftarUnit.length} unit di tahap Proses Inspeksi`;
+  if (!tampil.length) {
+    wrap.innerHTML = `
+      <div class="empty-state">
+        <div class="emoji">🗂️</div>
+        <div class="title">${daftarUnit.length ? 'Tidak ada yang cocok' : 'Belum ada unit'}</div>
+        <div class="sub">${daftarUnit.length ? 'Coba kata kunci lain, atau scan QR langsung.' : 'Belum ada unit yang sedang di tahap Proses Inspeksi saat ini.'}</div>
+      </div>`;
+    return;
+  }
+  wrap.innerHTML = tampil.map((it) => {
+    const selesai = lengkapUnit(it);
+    return `
+      <div class="unit-card" data-idx="${daftarUnit.indexOf(it)}">
+        <div class="unit-card-top">
+          <span class="unit-doc">${it.modul === 'SR' ? 'DO' : 'Surat Tarik'}: ${it.nomor_surat_tarik}</span>
+          <span class="unit-badge ${selesai ? 'ok' : 'pending'}">${selesai ? '✅ Sudah Lengkap' : '⏳ Belum Lengkap'}</span>
+        </div>
+        <div class="unit-kode">${it.product?.nomor_product || '-'} — SN ${it.serial_number}</div>
+        <div class="unit-sub">${it.product?.type_product || '-'} · ${it.product?.category_product || '-'}</div>
+      </div>`;
+  }).join('');
+  wrap.querySelectorAll('.unit-card').forEach((el) => {
+    el.addEventListener('click', () => {
+      const item = daftarUnit[Number(el.dataset.idx)];
+      unitAktif = { akt_produk: item, nomor_surat_tarik: item.nomor_surat_tarik, modul: item.modul };
+      fotoFile = null;
+      tampilkanFormView();
+      renderForm();
+    });
+  });
+}
+
+document.getElementById('inpCari').addEventListener('input', renderDaftar);
+document.getElementById('btnRefreshDaftar').addEventListener('click', muatDaftarInspeksi);
+
+/* ====================== CARI UNIT DI TAHAP PROSES INSPEKSI (hasil scan QR) ====================== */
 async function cariUnit(np, sn) {
-  const wrap = document.getElementById('hasilWrap');
+  tampilkanFormView();
+  const wrap = document.getElementById('viewForm');
   wrap.innerHTML = `<div class="empty-state"><div class="emoji">⏳</div><div class="title">Mencari unit…</div></div>`;
   try {
     const body = await apiFetch(`/akt-produk/cari-inspeksi?nomor_product=${encodeURIComponent(np)}&serial_number=${encodeURIComponent(sn)}`);
@@ -327,14 +426,16 @@ async function cariUnit(np, sn) {
         <div class="emoji">⚠️</div>
         <div class="title">Unit tidak ditemukan</div>
         <div class="sub">${err.message}</div>
+        <button class="btn btn-secondary" id="btnKembaliDariError" style="margin-top:14px;">Kembali ke Daftar</button>
       </div>`;
+    document.getElementById('btnKembaliDariError').addEventListener('click', tampilkanDaftar);
   }
 }
 
 /* ====================== RENDER FORM INSPEKSI ====================== */
 function renderForm() {
   const a = unitAktif.akt_produk;
-  const wrap = document.getElementById('hasilWrap');
+  const wrap = document.getElementById('viewForm');
   wrap.innerHTML = `
     <div class="card">
       <div class="produk-header">
@@ -368,7 +469,7 @@ function renderForm() {
           </div>
         </div>
         <div class="btn-row">
-          <button class="btn btn-secondary" id="btnBatalUnit">Scan Lagi</button>
+          <button class="btn btn-secondary" id="btnBatalUnit">↩️ Kembali ke Daftar</button>
           <button class="btn btn-success" id="btnSimpanUnit">💾 Simpan</button>
         </div>
       </div>
@@ -390,7 +491,7 @@ function renderForm() {
     document.getElementById('fotoOkLabel').classList.remove('hidden');
     document.getElementById('fieldFoto').classList.remove('err');
   });
-  document.getElementById('btnBatalUnit').addEventListener('click', () => { unitAktif = null; fotoFile = null; bukaScan(); });
+  document.getElementById('btnBatalUnit').addEventListener('click', () => { unitAktif = null; fotoFile = null; tampilkanDaftar(); });
   document.getElementById('btnSimpanUnit').addEventListener('click', simpanUnit);
 }
 
@@ -423,14 +524,14 @@ async function simpanUnit() {
     jumlahSesi += 1;
     updateCounter();
     navigator.vibrate?.(80);
-    document.getElementById('hasilWrap').innerHTML = `
+    document.getElementById('viewForm').innerHTML = `
       <div class="empty-state">
         <div class="emoji">✅</div>
         <div class="title">Tersimpan!</div>
         <div class="sub">${unitAktif.akt_produk.product?.nomor_product || ''} — SN ${unitAktif.akt_produk.serial_number} sudah diinspeksi.</div>
       </div>`;
     unitAktif = null; fotoFile = null;
-    setTimeout(bukaScan, 700);
+    setTimeout(() => { tampilkanDaftar(); muatDaftarInspeksi(); }, 900);
   } catch (err) {
     alert('❌ Gagal menyimpan: ' + err.message);
   } finally {
