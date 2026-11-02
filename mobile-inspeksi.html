@@ -124,6 +124,7 @@
   .unit-doc { font-size: 11px; color: var(--purple); font-weight: 700; }
   .unit-badge { font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
   .unit-badge.ok { background: #dcfce7; color: #166534; }
+  .unit-badge.sedang { background: #ede7f6; color: #5e35b1; }
   .unit-badge.pending { background: #fef3c7; color: #92400e; }
   .unit-kode { font-size: 15px; color: var(--navy); font-weight: 800; word-break: break-word; }
   .unit-sub { font-size: 12.5px; color: #4b5563; margin-top: 2px; }
@@ -343,10 +344,6 @@ function tampilkanFormView() {
 /* ====================== DAFTAR SEMUA UNIT PROSES INSPEKSI ====================== */
 let daftarUnit = [];
 
-function lengkapUnit(a) {
-  return !!(a.grade_kerusakan && a.hasil_inspeksi && a.attachment_inspeksi);
-}
-
 async function muatDaftarInspeksi() {
   const wrap = document.getElementById('daftarWrap');
   wrap.innerHTML = `<div class="empty-state"><div class="emoji">⏳</div><div class="title">Memuat daftar…</div></div>`;
@@ -378,12 +375,15 @@ function renderDaftar() {
     return;
   }
   wrap.innerHTML = tampil.map((it) => {
-    const selesai = lengkapUnit(it);
+    // Unit yg sudah "Selesai Diinspeksi" tidak pernah masuk daftar ini (sudah
+    // difilter backend) -- jadi di sini cuma ada 2 kemungkinan: belum mulai
+    // atau sedang dikerjakan.
+    const sedang = it.status_inspeksi === 'Sedang Diinspeksi';
     return `
       <div class="unit-card" data-idx="${daftarUnit.indexOf(it)}">
         <div class="unit-card-top">
           <span class="unit-doc">${it.modul === 'SR' ? 'DO' : 'Surat Tarik'}: ${it.nomor_surat_tarik}</span>
-          <span class="unit-badge ${selesai ? 'ok' : 'pending'}">${selesai ? '✅ Sudah Lengkap' : '⏳ Belum Lengkap'}</span>
+          <span class="unit-badge ${sedang ? 'sedang' : 'pending'}">${sedang ? '🔧 Sedang Diinspeksi' : '⏳ Belum Diinspeksi'}</span>
         </div>
         <div class="unit-kode">${it.product?.nomor_product || '-'} — SN ${it.serial_number}</div>
         <div class="unit-sub">${it.product?.type_product || '-'} · ${it.product?.category_product || '-'}</div>
@@ -428,6 +428,7 @@ async function cariUnit(np, sn) {
 /* ====================== RENDER FORM INSPEKSI ====================== */
 function renderForm() {
   const a = unitAktif.akt_produk;
+  const sudahMulai = !!a.status_inspeksi; // null/'' = "Belum Diinspeksi"
   const wrap = document.getElementById('viewForm');
   wrap.innerHTML = `
     <div class="card">
@@ -435,6 +436,10 @@ function renderForm() {
         <div class="kode">${a.product?.nomor_product || '-'} — SN ${a.serial_number}</div>
         <div class="sub">${a.product?.type_product || '-'} · ${a.product?.category_product || '-'}</div>
         <div class="doc">${unitAktif.modul === 'SR' ? 'DO' : 'Surat Tarik'}: ${unitAktif.nomor_surat_tarik || '-'}</div>
+        <div style="display:flex; align-items:center; gap:10px; margin-top:10px; flex-wrap:wrap;">
+          <span class="unit-badge ${sudahMulai ? 'sedang' : 'pending'}">${sudahMulai ? '🔧 Sedang Diinspeksi' : '⏳ Belum Diinspeksi'}</span>
+          ${!sudahMulai ? '<button type="button" class="btn btn-primary" style="width:auto; padding:7px 14px; font-size:12.5px;" id="btnMulaiInspeksi">▶ Mulai Inspeksi</button>' : ''}
+        </div>
       </div>
       <div class="ro-grid">
         <div class="ro-item"><span class="lbl">Qty</span><span class="val">${a.qty ?? '-'}</span></div>
@@ -443,27 +448,28 @@ function renderForm() {
       <div class="form-grid">
         <div class="field" id="fieldGrade">
           <label>Grade Kerusakan<span class="wajib">*</span></label>
-          <select id="inpGrade">
+          <select id="inpGrade" ${sudahMulai ? '' : 'disabled'}>
             <option value="" disabled>-- Pilih --</option>
             ${GRADE_KERUSAKAN_OPTIONS.map(o => `<option value="${o}" ${a.grade_kerusakan === o ? 'selected' : ''}>${o}</option>`).join('')}
           </select>
         </div>
         <div class="field" id="fieldHasil">
           <label>Hasil Inspeksi<span class="wajib">*</span></label>
-          <input type="text" id="inpHasil" value="${a.hasil_inspeksi || ''}" placeholder="Ketik hasil inspeksi..." />
+          <input type="text" id="inpHasil" value="${a.hasil_inspeksi || ''}" placeholder="Ketik hasil inspeksi..." ${sudahMulai ? '' : 'disabled'} />
         </div>
         <div class="field" id="fieldFoto">
           <label>Attachment Inspeksi (Foto)<span class="wajib">*</span></label>
           <input type="file" id="inpFoto" accept="image/*" capture="environment" style="display:none;" />
           <div class="foto-row">
-            <button type="button" class="btn btn-secondary" style="width:auto;" id="btnAmbilFoto">📷 Ambil Foto</button>
+            <button type="button" class="btn btn-secondary" style="width:auto;" id="btnAmbilFoto" ${sudahMulai ? '' : 'disabled'}>📷 Ambil Foto</button>
             <img id="fotoThumb" class="foto-thumb hidden" />
             <span class="foto-ok hidden" id="fotoOkLabel">✅ Foto siap</span>
           </div>
+          ${!sudahMulai ? '<div style="font-size:11.5px; color:#9ca3af; margin-top:4px;">Pencet "Mulai Inspeksi" dulu di atas.</div>' : ''}
         </div>
         <div class="btn-row">
           <button class="btn btn-secondary" id="btnBatalUnit">↩️ Kembali ke Daftar</button>
-          <button class="btn btn-success" id="btnSimpanUnit">💾 Simpan</button>
+          <button class="btn btn-success" id="btnSimpanUnit" ${sudahMulai ? '' : 'disabled'}>💾 Simpan</button>
         </div>
       </div>
     </div>
@@ -473,6 +479,7 @@ function renderForm() {
     document.getElementById('fotoOkLabel').classList.remove('hidden');
   }
 
+  document.getElementById('btnMulaiInspeksi')?.addEventListener('click', mulaiInspeksi);
   document.getElementById('btnAmbilFoto').addEventListener('click', () => document.getElementById('inpFoto').click());
   document.getElementById('inpFoto').addEventListener('change', (e) => {
     const file = e.target.files[0];
@@ -486,6 +493,20 @@ function renderForm() {
   });
   document.getElementById('btnBatalUnit').addEventListener('click', () => { unitAktif = null; fotoFile = null; tampilkanDaftar(); });
   document.getElementById('btnSimpanUnit').addEventListener('click', simpanUnit);
+}
+
+/* ====================== MULAI INSPEKSI (write-once di backend) ====================== */
+async function mulaiInspeksi() {
+  const btn = document.getElementById('btnMulaiInspeksi');
+  btn.disabled = true; btn.textContent = 'Memulai...';
+  try {
+    const body = await apiFetch(`/akt-produk/${unitAktif.akt_produk.id}/mulai-inspeksi`, { method: 'POST' });
+    unitAktif.akt_produk = body.data;
+    renderForm();
+  } catch (err) {
+    alert('❌ Gagal memulai inspeksi: ' + err.message);
+    btn.disabled = false; btn.textContent = '▶ Mulai Inspeksi';
+  }
 }
 
 /* ====================== SIMPAN (PUT akt-produk + POST attachment) ====================== */
