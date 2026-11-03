@@ -155,12 +155,9 @@
         <div class="logo">🔍</div>
         <div class="app">RS ELUX</div>
       </div>
-      <div class="counter" id="counter">Sesi ini: 0 unit</div>
+      <div class="counter nama-login hidden" id="namaLogin"></div>
     </div>
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-      <div class="topbar-title">📋 Proses Inspeksi (Mobile)</div>
-      <div class="nama-login hidden" id="namaLogin"></div>
-    </div>
+    <div class="topbar-title">📋 Proses Inspeksi (Mobile)</div>
   </div>
 
   <div class="wrap" id="appWrap" style="display:none;">
@@ -325,8 +322,6 @@ const GRADE_KERUSAKAN_OPTIONS = [
 /* ====================== STATE SESI ====================== */
 let unitAktif = null;       // { akt_produk, nomor_surat_tarik, modul }
 let fotoFile = null;        // File hasil ambil foto kamera, belum diupload
-let jumlahSesi = 0;
-function updateCounter() { document.getElementById('counter').textContent = `Sesi ini: ${jumlahSesi} unit`; }
 
 /* ====================== "(240)PRODUCT(21)SN" ====================== */
 function pisahKodeUnit(teks) {
@@ -540,8 +535,6 @@ async function simpanUnit() {
       formData.append('attachment_inspeksi', fotoFile);
       await apiFetch(`/akt-produk/${unitAktif.akt_produk.id}/attachment-inspeksi`, { method: 'POST', body: formData });
     }
-    jumlahSesi += 1;
-    updateCounter();
     navigator.vibrate?.(80);
     document.getElementById('viewForm').innerHTML = `
       <div class="empty-state">
@@ -635,7 +628,6 @@ document.getElementById('btnTorch').addEventListener('click', async () => {
   }
 });
 
-updateCounter();
 </script>
 </body>
 </html>
