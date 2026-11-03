@@ -11201,22 +11201,6 @@
   },
   {
     "modul": "MR",
-    "nomor_product": "956007170",
-    "type_product": "ETM2500AB",
-    "category_product": "Food Preservation",
-    "serial_number": "",
-    "qty": 1,
-    "nomor_transaksi": "TRK20261012-0283",
-    "nomor_induk": "Modern/lktp/241/XI/26",
-    "nomor_alokasi": "TGR/TU/26/004995",
-    "tanggal_mulai": "2026-09-07",
-    "tanggal_complete": null,
-    "reason": null,
-    "detail_reason": "KULKAS TIDAK DINGIN",
-    "status_proses": "Proses GR IBD"
-  },
-  {
-    "modul": "MR",
     "nomor_product": "956007169",
     "type_product": "ETM2500AA",
     "category_product": "Food Preservation",
@@ -11245,6 +11229,22 @@
     "tanggal_complete": null,
     "reason": null,
     "detail_reason": "Mesin berbunyi berisik",
+    "status_proses": "Proses GR IBD"
+  },
+  {
+    "modul": "MR",
+    "nomor_product": "956007170",
+    "type_product": "ETM2500AB",
+    "category_product": "Food Preservation",
+    "serial_number": "",
+    "qty": 1,
+    "nomor_transaksi": "TRK20261012-0283",
+    "nomor_induk": "Modern/lktp/241/XI/26",
+    "nomor_alokasi": "TGR/TU/26/004995",
+    "tanggal_mulai": "2026-09-07",
+    "tanggal_complete": null,
+    "reason": null,
+    "detail_reason": "KULKAS TIDAK DINGIN",
     "status_proses": "Proses GR IBD"
   },
   {
