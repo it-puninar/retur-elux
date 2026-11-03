@@ -131,20 +131,20 @@
 
   .hidden { display: none !important; }
 
-  /* ===== Layar Login (username+password) ===== */
+  /* ===== Layar Login (1 field PIN, per-orang) ===== */
   .login-screen { max-width: 340px; margin: 60px auto 0; text-align: center; padding: 0 16px; }
   .login-screen .emoji { font-size: 44px; margin-bottom: 14px; }
   .login-screen h2 { font-size: 17px; color: var(--navy); margin: 0 0 6px; }
   .login-screen p { font-size: 13px; color: #6b7280; margin: 0 0 22px; line-height: 1.6; }
-  .login-field { text-align: left; margin-bottom: 12px; }
-  .login-field label { font-size: 11px; color: #555; text-transform: uppercase; font-weight: 700; letter-spacing: 0.3px; margin-bottom: 5px; display: block; }
-  .login-input {
-    width: 100%; font-size: 15px; padding: 12px 14px; border: 1.5px solid #ccc; border-radius: 10px;
-    color: #1f2330; font-family: inherit; background: white;
+  .pin-input {
+    width: 100%; text-align: center; letter-spacing: 12px; font-size: 26px; font-weight: 700;
+    padding: 14px 12px 14px 22px; border: 1.5px solid #ccc; border-radius: 10px; color: #1f2330;
+    font-family: inherit; margin-bottom: 14px;
   }
-  .login-input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(26,35,126,0.12); }
-  .login-input.err { border-color: #dc2626; }
-  .login-error { color: #dc2626; font-size: 12.5px; margin: 2px 0 14px; min-height: 16px; text-align: left; }
+  .pin-input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(26,35,126,0.12); }
+  .pin-input.err { border-color: #dc2626; }
+  .login-error { color: #dc2626; font-size: 12.5px; margin-bottom: 12px; min-height: 16px; }
+  .nama-login { font-size: 11.5px; font-weight: 600; opacity: 0.95; }
 </style>
 </head>
 <body>
@@ -157,7 +157,10 @@
       </div>
       <div class="counter" id="counter">Sesi ini: 0 unit</div>
     </div>
-    <div class="topbar-title">📋 Proses Inspeksi (Mobile)</div>
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+      <div class="topbar-title">📋 Proses Inspeksi (Mobile)</div>
+      <div class="nama-login hidden" id="namaLogin"></div>
+    </div>
   </div>
 
   <div class="wrap" id="appWrap" style="display:none;">
@@ -176,16 +179,9 @@
 
   <div class="login-screen" id="loginScreen">
     <div class="emoji">🔒</div>
-    <h2>Login Proses Inspeksi</h2>
-    <p>Halaman ini khusus tim Proses Inspeksi. Masuk pakai akun yang diberikan supervisor.</p>
-    <div class="login-field">
-      <label>Username</label>
-      <input class="login-input" id="inpUsername" type="text" autocomplete="username" autocapitalize="off" />
-    </div>
-    <div class="login-field">
-      <label>Password</label>
-      <input class="login-input" id="inpPassword" type="password" autocomplete="current-password" />
-    </div>
+    <h2>Masukkan PIN</h2>
+    <p>Halaman ini khusus tim Proses Inspeksi. Masukkan PIN yang diberikan supervisor untuk masuk.</p>
+    <input class="pin-input" id="inpPin" type="tel" inputmode="numeric" pattern="[0-9]*" placeholder="••••" autocomplete="off" />
     <div class="login-error" id="loginError"></div>
     <button class="btn btn-primary" id="btnLogin">Masuk</button>
   </div>
@@ -223,15 +219,15 @@
 
 <script>
 /* ======================================================================
-   LOGIN username+password -- BUKAN Quick Apps SSO. Halaman ini dibuka
-   langsung dari HP (bookmark/link), di luar alur klik-tile portal Quick Apps
-   -- redirect SSO Quick Apps terbukti tidak balik membawa token utk kasus
-   itu, jadi dipakai akun sendiri per orang (tabel mst_inspeksi_user, lihat
-   backend-go/cmd/tambahuserinspeksi), dikirim via HTTP Basic Auth standar
-   (header Authorization: Basic ...) tiap request -- dicocokkan backend
-   (requireAuth di auth.go), bukan dicek di JS sini.
+   LOGIN PIN -- BUKAN Quick Apps SSO. Halaman ini dibuka langsung dari HP
+   (bookmark/link), di luar alur klik-tile portal Quick Apps -- redirect SSO
+   Quick Apps terbukti tidak balik membawa token utk kasus itu. Cukup 1 field
+   PIN, tapi tiap orang PIN-nya beda (tabel mst_inspeksi_user, lihat
+   backend-go/cmd/tambahuserinspeksi) -- PIN itu sendiri yg jadi identitas,
+   backend yg nentuin ini PIN siapa (lihat verifyMobileInspeksiPin di
+   auth.go), bukan dicek di JS sini.
    ====================================================================== */
-const AUTH_KEY = 'mobile_auth'; // isinya base64("username:password"), siap pakai sbg header Basic
+const AUTH_KEY = 'mobile_pin'; // isinya PIN apa adanya, dikirim via header X-Mobile-Pin
 
 // API_BASE ABSOLUT (bukan dihitung relatif dari lokasi file ini) -- beda
 // dari track-trace-scan.html, halaman ini dimaksudkan di-hosting DI LUAR
@@ -246,8 +242,8 @@ const AUTH_KEY = 'mobile_auth'; // isinya base64("username:password"), siap paka
 const API_BASE = 'https://quick-appsdev2.puninar.com/retur_elux/api';
 
 async function apiFetch(path, options = {}) {
-  const auth = localStorage.getItem(AUTH_KEY);
-  const headers = Object.assign({}, options.headers, auth ? { Authorization: `Basic ${auth}` } : {});
+  const pin = localStorage.getItem(AUTH_KEY);
+  const headers = Object.assign({}, options.headers, pin ? { 'X-Mobile-Pin': pin } : {});
   let res;
   try {
     res = await fetch(`${API_BASE}${path}`, Object.assign({}, options, { headers }));
@@ -256,7 +252,7 @@ async function apiFetch(path, options = {}) {
   }
   if (res.status === 401) {
     localStorage.removeItem(AUTH_KEY);
-    tampilkanLayarLogin('Username atau password salah, coba lagi.');
+    tampilkanLayarLogin('PIN tidak dikenali, coba lagi.');
     throw new Error('Login tidak valid.');
   }
   const body = await res.json().catch(() => ({}));
@@ -269,35 +265,39 @@ async function apiFetch(path, options = {}) {
 function tampilkanLayarLogin(pesanError) {
   document.getElementById('appWrap').style.display = 'none';
   document.getElementById('loginScreen').style.display = '';
+  document.getElementById('namaLogin').classList.add('hidden');
   const err = document.getElementById('loginError');
   err.textContent = pesanError || '';
-  document.getElementById('inpUsername').classList.toggle('err', !!pesanError);
-  document.getElementById('inpPassword').classList.toggle('err', !!pesanError);
-  document.getElementById('inpPassword').value = '';
-  document.getElementById('inpUsername').focus();
+  const inp = document.getElementById('inpPin');
+  inp.classList.toggle('err', !!pesanError);
+  inp.value = '';
+  inp.focus();
 }
 
-function tampilkanApp() {
+function tampilkanApp(nama) {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('appWrap').style.display = '';
+  const namaEl = document.getElementById('namaLogin');
+  if (nama) {
+    namaEl.textContent = `👤 ${nama}`;
+    namaEl.classList.remove('hidden');
+  }
 }
 
 async function cobaLogin() {
-  const username = document.getElementById('inpUsername').value.trim();
-  const password = document.getElementById('inpPassword').value;
+  const pin = document.getElementById('inpPin').value.trim();
   const err = document.getElementById('loginError');
-  if (!username || !password) {
-    err.textContent = 'Username dan password wajib diisi.';
-    document.getElementById('inpUsername').classList.toggle('err', !username);
-    document.getElementById('inpPassword').classList.toggle('err', !password);
+  if (!pin) {
+    err.textContent = 'PIN wajib diisi.';
+    document.getElementById('inpPin').classList.add('err');
     return;
   }
-  localStorage.setItem(AUTH_KEY, btoa(`${username}:${password}`));
+  localStorage.setItem(AUTH_KEY, pin);
   const btn = document.getElementById('btnLogin');
   btn.disabled = true; btn.textContent = 'Memeriksa...';
   try {
-    await apiFetch('/mobile-auth/ping');
-    tampilkanApp();
+    const body = await apiFetch('/mobile-auth/ping');
+    tampilkanApp(body.data?.nama);
     muatDaftarInspeksi();
   } catch (e) {
     // apiFetch sudah menampilkan layar login + pesan error-nya sendiri kalau 401
@@ -307,13 +307,12 @@ async function cobaLogin() {
 }
 
 document.getElementById('btnLogin').addEventListener('click', cobaLogin);
-document.getElementById('inpUsername').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('inpPassword').focus(); });
-document.getElementById('inpPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') cobaLogin(); });
+document.getElementById('inpPin').addEventListener('keydown', (e) => { if (e.key === 'Enter') cobaLogin(); });
 
 // Login sudah pernah disimpan sebelumnya (sesi lalu) -- langsung coba pakai,
 // jangan tanya ulang kalau masih valid.
 if (localStorage.getItem(AUTH_KEY)) {
-  apiFetch('/mobile-auth/ping').then(() => { tampilkanApp(); muatDaftarInspeksi(); }).catch(() => {});
+  apiFetch('/mobile-auth/ping').then((body) => { tampilkanApp(body.data?.nama); muatDaftarInspeksi(); }).catch(() => {});
 } else {
   tampilkanLayarLogin();
 }
