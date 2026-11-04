@@ -4107,8 +4107,8 @@
     "nomor_alokasi": "9304416468",
     "tanggal_mulai": "2026-07-27",
     "tanggal_complete": null,
-    "reason": "2. Masalah Packing Unit/Dus",
-    "detail_reason": "SR_KARTON SOBEK",
+    "reason": "1. Masalah Administratif",
+    "detail_reason": "SR_ADMINISTRATIF",
     "status_proses": "Proses GR IBD"
   },
   {
@@ -4123,8 +4123,8 @@
     "nomor_alokasi": "9304416468",
     "tanggal_mulai": "2026-07-27",
     "tanggal_complete": null,
-    "reason": "1. Masalah Administratif",
-    "detail_reason": "SR_ADMINISTRATIF",
+    "reason": "2. Masalah Packing Unit/Dus",
+    "detail_reason": "SR_KARTON SOBEK",
     "status_proses": "Proses GR IBD"
   },
   {
@@ -5393,8 +5393,8 @@
   },
   {
     "modul": "SR",
-    "nomor_product": "914922074",
-    "type_product": "EWF1024D3WC",
+    "nomor_product": "914922113",
+    "type_product": "EWF1023P5SC",
     "category_product": "Fabric Care",
     "serial_number": "NA",
     "qty": 1,
@@ -5409,8 +5409,8 @@
   },
   {
     "modul": "SR",
-    "nomor_product": "914922113",
-    "type_product": "EWF1023P5SC",
+    "nomor_product": "914922074",
+    "type_product": "EWF1024D3WC",
     "category_product": "Fabric Care",
     "serial_number": "NA",
     "qty": 1,
