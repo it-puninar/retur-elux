@@ -7117,7 +7117,7 @@
     "tanggal_complete": null,
     "reason": "QUALITY",
     "detail_reason": "Barang lecet",
-    "status_proses": "Pendaftaran RS"
+    "status_proses": "Proses GR IBD"
   },
   {
     "modul": "MR",
@@ -7133,7 +7133,7 @@
     "tanggal_complete": null,
     "reason": "QUALITY",
     "detail_reason": "Barang lecet",
-    "status_proses": "Pendaftaran RS"
+    "status_proses": "Proses GR IBD"
   },
   {
     "modul": "MR",
