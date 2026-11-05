@@ -6797,7 +6797,7 @@
     "tanggal_complete": null,
     "reason": "QUALITY",
     "detail_reason": "LECET",
-    "status_proses": "Konfirmasi Fisik dan Estimasi"
+    "status_proses": "Pendaftaran RS"
   },
   {
     "modul": "MR",
@@ -6813,7 +6813,7 @@
     "tanggal_complete": null,
     "reason": "QUALITY",
     "detail_reason": "HANCUR",
-    "status_proses": "Konfirmasi Fisik dan Estimasi"
+    "status_proses": "Pendaftaran RS"
   },
   {
     "modul": "MR",
@@ -6829,7 +6829,7 @@
     "tanggal_complete": null,
     "reason": "QUALITY",
     "detail_reason": "PENYOK",
-    "status_proses": "Konfirmasi Fisik dan Estimasi"
+    "status_proses": "Pendaftaran RS"
   },
   {
     "modul": "MR",
@@ -6845,7 +6845,7 @@
     "tanggal_complete": null,
     "reason": "QUALITY",
     "detail_reason": "TIDAK DINGIN",
-    "status_proses": "Konfirmasi Fisik dan Estimasi"
+    "status_proses": "Pendaftaran RS"
   },
   {
     "modul": "MR",
@@ -7117,14 +7117,14 @@
     "tanggal_complete": null,
     "reason": "QUALITY",
     "detail_reason": "Barang lecet",
-    "status_proses": "Pendaftaran Surat Tarik"
+    "status_proses": "Monitoring Penarikan"
   },
   {
     "modul": "MR",
     "nomor_product": "919090446",
     "type_product": "EWT7588H1WB",
     "category_product": "Fabric Care",
-    "serial_number": "60277443",
+    "serial_number": "60277441",
     "qty": 1,
     "nomor_transaksi": "TRK20261012-0004",
     "nomor_induk": "Modern/lktp/199/VI/26",
@@ -7133,7 +7133,7 @@
     "tanggal_complete": null,
     "reason": "QUALITY",
     "detail_reason": "Barang lecet",
-    "status_proses": "Pendaftaran Surat Tarik"
+    "status_proses": "Monitoring Penarikan"
   },
   {
     "modul": "MR",
@@ -7149,7 +7149,7 @@
     "tanggal_complete": null,
     "reason": "QUALITY",
     "detail_reason": "Barang lecet",
-    "status_proses": "Pendaftaran Surat Tarik"
+    "status_proses": "Monitoring Penarikan"
   },
   {
     "modul": "MR",
