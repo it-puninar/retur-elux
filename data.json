@@ -7117,23 +7117,7 @@
     "tanggal_complete": null,
     "reason": "QUALITY",
     "detail_reason": "Barang lecet",
-    "status_proses": "Monitoring Penarikan"
-  },
-  {
-    "modul": "MR",
-    "nomor_product": "919090446",
-    "type_product": "EWT7588H1WB",
-    "category_product": "Fabric Care",
-    "serial_number": "60277441",
-    "qty": 1,
-    "nomor_transaksi": "TRK20261012-0004",
-    "nomor_induk": "Modern/lktp/199/VI/26",
-    "nomor_alokasi": "JKT/TU/26/004624",
-    "tanggal_mulai": "2026-06-05",
-    "tanggal_complete": null,
-    "reason": "QUALITY",
-    "detail_reason": "Barang lecet",
-    "status_proses": "Monitoring Penarikan"
+    "status_proses": "Pendaftaran RS"
   },
   {
     "modul": "MR",
@@ -7149,7 +7133,23 @@
     "tanggal_complete": null,
     "reason": "QUALITY",
     "detail_reason": "Barang lecet",
-    "status_proses": "Monitoring Penarikan"
+    "status_proses": "Pendaftaran RS"
+  },
+  {
+    "modul": "MR",
+    "nomor_product": "919090446",
+    "type_product": "EWT7588H1WB",
+    "category_product": "Fabric Care",
+    "serial_number": "60277441",
+    "qty": 1,
+    "nomor_transaksi": "TRK20261105-0002",
+    "nomor_induk": "Modern/lktp/199/VI/26",
+    "nomor_alokasi": "JKT/TU/26/004624",
+    "tanggal_mulai": "2026-06-05",
+    "tanggal_complete": null,
+    "reason": "QUALITY",
+    "detail_reason": "Barang lecet",
+    "status_proses": "Pendaftaran Surat Tarik"
   },
   {
     "modul": "MR",
