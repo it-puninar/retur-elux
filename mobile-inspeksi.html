@@ -345,6 +345,19 @@ const GRADE_KERUSAKAN_OPTIONS = [
   '0010 - good', '0020 - sample', '0030 - Open', '0040 - Torn',
   '0050 - Graded', '0060 - Dismantle', '0070 - Scrap', '0080 - damage inbound',
 ];
+// Satu-satunya Grade Kerusakan yg mewajibkan foto (lihat GradeScrap di
+// backend-go/handlers_akt_produk.go) -- harus sama persis dgn salah satu opsi di atas.
+const GRADE_WAJIB_FOTO = '0070 - Scrap';
+const BODY_POSISI_OPTIONS = ['Depan', 'Samping Kanan', 'Samping Kiri', 'Belakang', 'Others'];
+const HASIL_INSPEKSI_OPTIONS = ['Body Kusam', 'Korosi', 'Lecet', 'Ex Pakai', 'Penyok', 'Penyok Besar', 'Gores', 'Others'];
+
+// Pisahkan nilai tersimpan (preset ATAU teks bebas) jadi { pilihan, lainnya }
+// utk render dropdown + input "Others" -- sama persis dgn pisahPilihanLainnya
+// di App.jsx (desktop).
+function pisahPilihanLainnya(value, options) {
+  if (!value) return { pilihan: '', lainnya: '' };
+  return options.includes(value) ? { pilihan: value, lainnya: '' } : { pilihan: 'Others', lainnya: value };
+}
 
 /* ====================== STATE SESI ====================== */
 let unitAktif = null;       // { akt_produk, nomor_surat_tarik, modul }
@@ -457,6 +470,10 @@ async function cariUnit(np, sn) {
 function renderForm() {
   const a = unitAktif.akt_produk;
   const sudahMulai = !!a.status_inspeksi; // null/'' = "Belum Diinspeksi"
+  const statusSebelum = a.status_sebelum_inspeksi || '0030 - Open';
+  const posisi = pisahPilihanLainnya(a.posisi_body || '', BODY_POSISI_OPTIONS);
+  const hasil = pisahPilihanLainnya(a.hasil_inspeksi || '', HASIL_INSPEKSI_OPTIONS);
+  const fotoWajib = a.grade_kerusakan === GRADE_WAJIB_FOTO;
   const wrap = document.getElementById('viewForm');
   wrap.innerHTML = `
     <div class="card">
@@ -474,6 +491,12 @@ function renderForm() {
         <div class="ro-item"><span class="lbl">Reason Penarikan</span><span class="val">${a.reason_penarikan || '-'}</span></div>
       </div>
       <div class="form-grid">
+        <div class="field" id="fieldStatusSebelum">
+          <label>Status Sebelum Inspeksi<span class="wajib">*</span></label>
+          <select id="inpStatusSebelum">
+            ${GRADE_KERUSAKAN_OPTIONS.map(o => `<option value="${o}" ${statusSebelum === o ? 'selected' : ''}>${o}</option>`).join('')}
+          </select>
+        </div>
         <div class="field" id="fieldGrade">
           <label>Grade Kerusakan<span class="wajib">*</span></label>
           <select id="inpGrade" ${sudahMulai ? '' : 'disabled'}>
@@ -481,19 +504,33 @@ function renderForm() {
             ${GRADE_KERUSAKAN_OPTIONS.map(o => `<option value="${o}" ${a.grade_kerusakan === o ? 'selected' : ''}>${o}</option>`).join('')}
           </select>
         </div>
+        <div class="field" id="fieldBody">
+          <label>Body<span class="wajib">*</span></label>
+          <select id="inpBodyPilihan" ${sudahMulai ? '' : 'disabled'}>
+            <option value="" disabled ${!posisi.pilihan ? 'selected' : ''}>-- Pilih --</option>
+            ${BODY_POSISI_OPTIONS.map(o => `<option value="${o}" ${posisi.pilihan === o ? 'selected' : ''}>${o}</option>`).join('')}
+          </select>
+          <input type="text" id="inpBodyLainnya" value="${posisi.lainnya}" placeholder="Isi posisi lainnya..." style="margin-top:8px;" class="${posisi.pilihan === 'Others' ? '' : 'hidden'}" ${sudahMulai ? '' : 'disabled'} />
+        </div>
         <div class="field" id="fieldHasil">
           <label>Hasil Inspeksi<span class="wajib">*</span></label>
-          <input type="text" id="inpHasil" value="${a.hasil_inspeksi || ''}" placeholder="Ketik hasil inspeksi..." ${sudahMulai ? '' : 'disabled'} />
+          <select id="inpHasilPilihan" ${sudahMulai ? '' : 'disabled'}>
+            <option value="" disabled ${!hasil.pilihan ? 'selected' : ''}>-- Pilih --</option>
+            ${HASIL_INSPEKSI_OPTIONS.map(o => `<option value="${o}" ${hasil.pilihan === o ? 'selected' : ''}>${o}</option>`).join('')}
+          </select>
+          <input type="text" id="inpHasilLainnya" value="${hasil.lainnya}" placeholder="Isi hasil lainnya..." style="margin-top:8px;" class="${hasil.pilihan === 'Others' ? '' : 'hidden'}" ${sudahMulai ? '' : 'disabled'} />
         </div>
         <div class="field" id="fieldFoto">
-          <label>Attachment Inspeksi (Foto)<span class="wajib">*</span></label>
+          <label>Attachment Inspeksi (Foto)<span class="wajib ${fotoWajib ? '' : 'hidden'}" id="lblFotoWajib">*</span></label>
           <input type="file" id="inpFoto" accept="image/*" capture="environment" style="display:none;" />
           <div class="foto-row">
             <button type="button" class="btn btn-secondary" style="width:auto;" id="btnAmbilFoto" ${sudahMulai ? '' : 'disabled'}>📷 Ambil Foto</button>
             <img id="fotoThumb" class="foto-thumb hidden" />
             <span class="foto-ok hidden" id="fotoOkLabel">✅ Foto siap</span>
           </div>
-          ${!sudahMulai ? '<div style="font-size:11.5px; color:#9ca3af; margin-top:4px;">Pencet "Mulai Inspeksi" dulu di atas.</div>' : ''}
+          ${!sudahMulai
+            ? '<div style="font-size:11.5px; color:#9ca3af; margin-top:4px;">Pencet "Mulai Inspeksi" dulu di atas.</div>'
+            : `<div id="fotoHint" style="font-size:11.5px; color:#9ca3af; margin-top:4px; ${fotoWajib ? 'display:none;' : ''}">Opsional (wajib hanya jika Grade Kerusakan = ${GRADE_WAJIB_FOTO})</div>`}
         </div>
         <div class="btn-row">
           <button class="btn btn-secondary" id="btnBatalUnit">↩️ Kembali ke Daftar</button>
@@ -508,6 +545,20 @@ function renderForm() {
   }
 
   document.getElementById('btnMulaiInspeksi')?.addEventListener('click', mulaiInspeksi);
+  document.getElementById('inpBodyPilihan').addEventListener('change', (e) => {
+    document.getElementById('inpBodyLainnya').classList.toggle('hidden', e.target.value !== 'Others');
+    document.getElementById('fieldBody').classList.remove('err');
+  });
+  document.getElementById('inpHasilPilihan').addEventListener('change', (e) => {
+    document.getElementById('inpHasilLainnya').classList.toggle('hidden', e.target.value !== 'Others');
+    document.getElementById('fieldHasil').classList.remove('err');
+  });
+  document.getElementById('inpGrade').addEventListener('change', (e) => {
+    const scrap = e.target.value === GRADE_WAJIB_FOTO;
+    document.getElementById('lblFotoWajib').classList.toggle('hidden', !scrap);
+    const hint = document.getElementById('fotoHint');
+    if (hint) hint.style.display = scrap ? 'none' : '';
+  });
   document.getElementById('btnAmbilFoto').addEventListener('click', () => document.getElementById('inpFoto').click());
   document.getElementById('inpFoto').addEventListener('change', (e) => {
     const file = e.target.files[0];
@@ -539,16 +590,27 @@ async function mulaiInspeksi() {
 
 /* ====================== SIMPAN (PUT akt-produk + POST attachment) ====================== */
 async function simpanUnit() {
+  const statusSebelum = document.getElementById('inpStatusSebelum').value;
   const grade = document.getElementById('inpGrade').value;
-  const hasil = document.getElementById('inpHasil').value.trim();
+  const bodyPilihan = document.getElementById('inpBodyPilihan').value;
+  const bodyLainnya = document.getElementById('inpBodyLainnya').value.trim();
+  const posisiBody = bodyPilihan === 'Others' ? bodyLainnya : bodyPilihan;
+  const hasilPilihan = document.getElementById('inpHasilPilihan').value;
+  const hasilLainnya = document.getElementById('inpHasilLainnya').value.trim();
+  const hasil = hasilPilihan === 'Others' ? hasilLainnya : hasilPilihan;
+  const fotoWajib = grade === GRADE_WAJIB_FOTO;
   const sudahAdaFotoLama = !!unitAktif.akt_produk.attachment_inspeksi;
 
   let adaError = false;
   document.getElementById('fieldGrade').classList.toggle('err', !grade); if (!grade) adaError = true;
+  document.getElementById('fieldBody').classList.toggle('err', !posisiBody); if (!posisiBody) adaError = true;
   document.getElementById('fieldHasil').classList.toggle('err', !hasil); if (!hasil) adaError = true;
-  const perluFoto = !fotoFile && !sudahAdaFotoLama;
+  const perluFoto = fotoWajib && !fotoFile && !sudahAdaFotoLama;
   document.getElementById('fieldFoto').classList.toggle('err', perluFoto); if (perluFoto) adaError = true;
-  if (adaError) { alert('Lengkapi Grade Kerusakan, Hasil Inspeksi, dan Foto dulu sebelum disimpan.'); return; }
+  if (adaError) {
+    alert(`Lengkapi Grade Kerusakan, Body, dan Hasil Inspeksi${fotoWajib ? ', dan Foto' : ''} dulu sebelum disimpan.`);
+    return;
+  }
 
   const btn = document.getElementById('btnSimpanUnit');
   btn.disabled = true; btn.textContent = 'Menyimpan...';
@@ -556,7 +618,7 @@ async function simpanUnit() {
     await apiFetch(`/akt-produk/${unitAktif.akt_produk.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ grade_kerusakan: grade, hasil_inspeksi: hasil }),
+      body: JSON.stringify({ status_sebelum_inspeksi: statusSebelum, grade_kerusakan: grade, posisi_body: posisiBody, hasil_inspeksi: hasil }),
     });
     if (fotoFile) {
       const formData = new FormData();
