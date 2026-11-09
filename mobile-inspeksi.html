@@ -103,6 +103,12 @@
   .field select, .field input[type="text"] { padding: 11px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; background: white; color: #222; width: 100%; font-family: inherit; }
   .field select:focus, .field input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(26,35,126,0.12); }
   .field.err select, .field.err input { border-color: #dc2626; }
+  .field.err .checkbox-group { border-color: #dc2626; }
+
+  .checkbox-group { display: flex; flex-direction: column; gap: 2px; border: 1px solid #ccc; border-radius: 8px; padding: 4px 4px; background: white; }
+  .checkbox-item { display: flex; align-items: center; gap: 9px; padding: 8px 8px; border-radius: 6px; font-size: 13.5px; color: #222; }
+  .checkbox-item input[type="checkbox"] { width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--navy); }
+  .checkbox-item input[type="checkbox"]:disabled { opacity: 0.5; }
 
   .foto-row { display: flex; align-items: center; gap: 12px; }
   .foto-thumb { width: 54px; height: 54px; border-radius: 8px; object-fit: cover; border: 1px solid #ddd; flex-shrink: 0; }
@@ -376,6 +382,26 @@ function pisahPilihanLainnya(value, options) {
   return options.includes(value) ? { pilihan: value, lainnya: '' } : { pilihan: 'Others', lainnya: value };
 }
 
+// Versi multiselect (dipakai Body -- bisa pilih beberapa bagian sekaligus).
+// Nilai tersimpan di DB tetap 1 kolom teks, bagian-bagian digabung ", ".
+// Token yang tidak cocok preset manapun dianggap sebagai teks "Others".
+function pisahMultiPilihan(value, options) {
+  const preset = options.filter((o) => o !== 'Others');
+  if (!value) return { dipilih: [], lainnya: '' };
+  const token = value.split(',').map((t) => t.trim()).filter(Boolean);
+  const dipilih = token.filter((t) => preset.includes(t));
+  const sisa = token.filter((t) => !preset.includes(t));
+  const lainnya = sisa.join(', ');
+  if (lainnya) dipilih.push('Others');
+  return { dipilih, lainnya };
+}
+
+function gabungMultiPilihan(dipilih, lainnya) {
+  const bagian = dipilih.filter((o) => o !== 'Others');
+  if (dipilih.includes('Others') && lainnya.trim()) bagian.push(lainnya.trim());
+  return bagian.join(', ');
+}
+
 /* ====================== STATE SESI ====================== */
 let unitAktif = null;       // { akt_produk, nomor_surat_tarik, modul }
 let fotoFile = null;        // File hasil ambil foto kamera, belum diupload
@@ -530,7 +556,7 @@ function renderForm() {
   const a = unitAktif.akt_produk;
   const sudahMulai = !!a.status_inspeksi; // null/'' = "Belum Diinspeksi"
   const statusSebelum = a.status_sebelum_inspeksi || '0030 - Open';
-  const posisi = pisahPilihanLainnya(a.posisi_body || '', BODY_POSISI_OPTIONS);
+  const posisi = pisahMultiPilihan(a.posisi_body || '', BODY_POSISI_OPTIONS);
   const hasil = pisahPilihanLainnya(a.hasil_inspeksi || '', HASIL_INSPEKSI_OPTIONS);
   const fotoWajib = a.grade_kerusakan === GRADE_WAJIB_FOTO;
   const wrap = document.getElementById('viewForm');
@@ -564,12 +590,15 @@ function renderForm() {
           </select>
         </div>
         <div class="field" id="fieldBody">
-          <label>Body<span class="wajib">*</span></label>
-          <select id="inpBodyPilihan" ${sudahMulai ? '' : 'disabled'}>
-            <option value="" disabled ${!posisi.pilihan ? 'selected' : ''}>-- Pilih --</option>
-            ${BODY_POSISI_OPTIONS.map(o => `<option value="${o}" ${posisi.pilihan === o ? 'selected' : ''}>${o}</option>`).join('')}
-          </select>
-          <input type="text" id="inpBodyLainnya" value="${posisi.lainnya}" placeholder="Isi posisi lainnya..." style="margin-top:8px;" class="${posisi.pilihan === 'Others' ? '' : 'hidden'}" ${sudahMulai ? '' : 'disabled'} />
+          <label>Body (bisa pilih lebih dari satu)<span class="wajib">*</span></label>
+          <div class="checkbox-group" id="bodyCheckGroup">
+            ${BODY_POSISI_OPTIONS.map(o => `
+              <label class="checkbox-item">
+                <input type="checkbox" class="body-check" value="${o}" ${posisi.dipilih.includes(o) ? 'checked' : ''} ${sudahMulai ? '' : 'disabled'} />
+                <span>${o}</span>
+              </label>`).join('')}
+          </div>
+          <input type="text" id="inpBodyLainnya" value="${posisi.lainnya}" placeholder="Isi posisi lainnya..." style="margin-top:8px;" class="${posisi.dipilih.includes('Others') ? '' : 'hidden'}" ${sudahMulai ? '' : 'disabled'} />
         </div>
         <div class="field" id="fieldHasil">
           <label>Hasil Inspeksi<span class="wajib">*</span></label>
@@ -604,9 +633,12 @@ function renderForm() {
   }
 
   document.getElementById('btnMulaiInspeksi')?.addEventListener('click', mulaiInspeksi);
-  document.getElementById('inpBodyPilihan').addEventListener('change', (e) => {
-    document.getElementById('inpBodyLainnya').classList.toggle('hidden', e.target.value !== 'Others');
-    document.getElementById('fieldBody').classList.remove('err');
+  document.querySelectorAll('.body-check').forEach((chk) => {
+    chk.addEventListener('change', () => {
+      const othersChecked = document.querySelector('.body-check[value="Others"]').checked;
+      document.getElementById('inpBodyLainnya').classList.toggle('hidden', !othersChecked);
+      document.getElementById('fieldBody').classList.remove('err');
+    });
   });
   document.getElementById('inpHasilPilihan').addEventListener('change', (e) => {
     document.getElementById('inpHasilLainnya').classList.toggle('hidden', e.target.value !== 'Others');
@@ -651,9 +683,9 @@ async function mulaiInspeksi() {
 async function simpanUnit() {
   const statusSebelum = document.getElementById('inpStatusSebelum').value;
   const grade = document.getElementById('inpGrade').value;
-  const bodyPilihan = document.getElementById('inpBodyPilihan').value;
+  const bodyDipilih = Array.from(document.querySelectorAll('.body-check:checked')).map((c) => c.value);
   const bodyLainnya = document.getElementById('inpBodyLainnya').value.trim();
-  const posisiBody = bodyPilihan === 'Others' ? bodyLainnya : bodyPilihan;
+  const posisiBody = gabungMultiPilihan(bodyDipilih, bodyLainnya);
   const hasilPilihan = document.getElementById('inpHasilPilihan').value;
   const hasilLainnya = document.getElementById('inpHasilLainnya').value.trim();
   const hasil = hasilPilihan === 'Others' ? hasilLainnya : hasilPilihan;
