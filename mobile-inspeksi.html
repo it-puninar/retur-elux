@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Proses Inspeksi (Mobile) — RS ELUX</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
     --navy: #1a237e;
@@ -118,6 +119,12 @@
   .cari-row input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(26,35,126,0.12); }
   .btn-refresh { width: auto; flex-shrink: 0; padding: 11px 14px; background: white; border: 1px solid #ccc; color: #555; border-radius: 8px; }
   .daftar-info { font-size: 11.5px; color: #888; margin: -4px 0 12px; }
+  .export-panel { background: white; border: 1px solid #e0e0e0; border-radius: var(--radius); padding: 12px 14px; margin-bottom: 12px; }
+  .export-panel .lbl { font-size: 10.5px; color: #888; text-transform: uppercase; font-weight: 700; margin-bottom: 6px; display: block; }
+  .export-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .export-row input[type="date"] { flex: 1; min-width: 118px; padding: 9px 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 13px; font-family: inherit; color: #222; }
+  .export-row span { font-size: 12px; color: #888; }
+  .export-row .btn { width: auto; flex-shrink: 0; padding: 9px 16px; }
   .unit-card { background: white; border-radius: var(--radius); box-shadow: 0 1px 3px rgba(0,0,0,0.08); padding: 14px 16px; margin-bottom: 10px; cursor: pointer; }
   .unit-card:active { transform: scale(0.99); }
   .unit-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
@@ -177,6 +184,16 @@
         <button type="button" class="btn-refresh" id="btnRefreshDaftar" title="Muat ulang daftar">↻</button>
       </div>
       <button class="btn btn-scan-big" id="btnScan" style="margin-bottom:14px;">📷 Scan QR Code Unit</button>
+      <button type="button" class="btn btn-secondary" id="btnToggleExport" style="margin-bottom:14px;">📥 Export Excel</button>
+      <div class="export-panel hidden" id="exportPanel">
+        <label class="lbl">Rentang Tanggal Penarikan (opsional)</label>
+        <div class="export-row">
+          <input type="date" id="inpExportDari" />
+          <span>s/d</span>
+          <input type="date" id="inpExportSampai" />
+          <button type="button" class="btn btn-primary" id="btnExportKonfirmasi">Export</button>
+        </div>
+      </div>
       <div class="daftar-info" id="daftarInfo"></div>
       <div id="daftarWrap"></div>
     </div>
@@ -443,6 +460,48 @@ function renderDaftar() {
 
 document.getElementById('inpCari').addEventListener('input', renderDaftar);
 document.getElementById('btnRefreshDaftar').addEventListener('click', muatDaftarInspeksi);
+
+/* ====================== EXPORT EXCEL (rekap lintas dokumen) ======================
+   Dirakit di SINI (SheetJS via CDN), bukan dari daftarUnit yg lagi tampil --
+   datanya dari /dashboard/export-inspeksi (sama persis endpoint yg dipakai
+   tombol "Export Excel" di Dashboard desktop, lihat handleExportInspeksi di
+   backend-go/handlers_dashboard.go), jadi SEMUA unit (bukan cuma yg di tahap
+   Proses Inspeksi) & bisa difilter rentang Tanggal Penarikan. */
+const KOLOM_EXPORT_INSPEKSI = [
+  ['Nomor Surat Tarik/DO', 'nomor_surat_tarik'], ['Modul', 'modul'], ['Tanggal Penarikan', 'tgl_penarikan'],
+  ['Nomor IBD', 'nomor_ibd'], ['Product', 'nomor_product'], ['Type Product', 'type_product'],
+  ['Category Product', 'category_product'], ['Serial Number', 'serial_number'], ['Qty', 'qty'],
+  ['Reason Penarikan', 'reason_penarikan'], ['Status Sebelum Inspeksi', 'status_sebelum_inspeksi'],
+  ['Grade Kerusakan', 'grade_kerusakan'], ['Body', 'posisi_body'], ['Hasil Inspeksi', 'hasil_inspeksi'],
+  ['Status Inspeksi', 'status_inspeksi'], ['Mulai Inspeksi At', 'mulai_inspeksi_at'],
+];
+document.getElementById('btnToggleExport').addEventListener('click', () => {
+  document.getElementById('exportPanel').classList.toggle('hidden');
+});
+document.getElementById('btnExportKonfirmasi').addEventListener('click', async () => {
+  const start = document.getElementById('inpExportDari').value;
+  const end = document.getElementById('inpExportSampai').value;
+  const btn = document.getElementById('btnExportKonfirmasi');
+  btn.disabled = true; btn.textContent = 'Mengekspor...';
+  try {
+    const qs = new URLSearchParams();
+    if (start) qs.set('start', start);
+    if (end) qs.set('end', end);
+    const body = await apiFetch(`/dashboard/export-inspeksi?${qs.toString()}`);
+    const rows = body.data || [];
+    const data = [KOLOM_EXPORT_INSPEKSI.map((k) => k[0])]
+      .concat(rows.map((r) => KOLOM_EXPORT_INSPEKSI.map(([, key]) => r[key] ?? '')));
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Proses Inspeksi');
+    XLSX.writeFile(wb, `export-inspeksi-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    document.getElementById('exportPanel').classList.add('hidden');
+  } catch (err) {
+    alert('❌ Gagal export: ' + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Export';
+  }
+});
 
 /* ====================== CARI UNIT DI TAHAP PROSES INSPEKSI (hasil scan QR) ====================== */
 async function cariUnit(np, sn) {
