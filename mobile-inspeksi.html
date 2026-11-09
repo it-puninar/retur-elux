@@ -145,7 +145,11 @@
   .pin-input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(26,35,126,0.12); }
   .pin-input.err { border-color: #dc2626; }
   .login-error { color: #dc2626; font-size: 12.5px; margin-bottom: 12px; min-height: 16px; }
-  .nama-login { font-size: 11.5px; font-weight: 600; opacity: 0.95; }
+  .nama-login { font-size: 11.5px; font-weight: 600; opacity: 0.95; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+  .akun-wrap { position: relative; }
+  .akun-dropdown { position: absolute; top: calc(100% + 6px); right: 0; background: white; border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,0.22); overflow: hidden; z-index: 40; min-width: 130px; }
+  .akun-dropdown button { width: 100%; background: none; border: none; padding: 11px 14px; text-align: left; font-size: 13px; color: #dc2626; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .akun-dropdown button:active { background: #fef2f2; }
 </style>
 </head>
 <body>
@@ -156,7 +160,12 @@
         <div class="logo">🔍</div>
         <div class="app">RS ELUX</div>
       </div>
-      <div class="counter nama-login hidden" id="namaLogin"></div>
+      <div class="akun-wrap">
+        <div class="counter nama-login hidden" id="namaLogin"></div>
+        <div class="akun-dropdown hidden" id="akunDropdown">
+          <button type="button" id="btnLogout">🚪 Logout</button>
+        </div>
+      </div>
     </div>
     <div class="topbar-title">📋 Proses Inspeksi (Mobile)</div>
   </div>
@@ -264,6 +273,7 @@ function tampilkanLayarLogin(pesanError) {
   document.getElementById('appWrap').style.display = 'none';
   document.getElementById('loginScreen').style.display = '';
   document.getElementById('namaLogin').classList.add('hidden');
+  document.getElementById('akunDropdown').classList.add('hidden');
   const err = document.getElementById('loginError');
   err.textContent = pesanError || '';
   const inp = document.getElementById('inpPin');
@@ -277,7 +287,7 @@ function tampilkanApp(nama) {
   document.getElementById('appWrap').style.display = '';
   const namaEl = document.getElementById('namaLogin');
   if (nama) {
-    namaEl.textContent = `👤 ${nama}`;
+    namaEl.textContent = `👤 ${nama} ▾`;
     namaEl.classList.remove('hidden');
   }
 }
@@ -306,6 +316,22 @@ async function cobaLogin() {
 
 document.getElementById('btnLogin').addEventListener('click', cobaLogin);
 document.getElementById('inpPin').addEventListener('keydown', (e) => { if (e.key === 'Enter') cobaLogin(); });
+
+/* ====================== DROPDOWN AKUN (LOGOUT) ====================== */
+document.getElementById('namaLogin').addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.getElementById('akunDropdown').classList.toggle('hidden');
+});
+document.addEventListener('click', () => document.getElementById('akunDropdown').classList.add('hidden'));
+document.getElementById('btnLogout').addEventListener('click', (e) => {
+  e.stopPropagation();
+  localStorage.removeItem(AUTH_KEY);
+  daftarUnit = [];
+  unitAktif = null;
+  fotoFile = null;
+  tampilkanDaftar();
+  tampilkanLayarLogin();
+});
 
 // Login sudah pernah disimpan sebelumnya (sesi lalu) -- langsung coba pakai,
 // jangan tanya ulang kalau masih valid.
