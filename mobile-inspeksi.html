@@ -371,6 +371,14 @@ const GRADE_KERUSAKAN_OPTIONS = [
 // Satu-satunya Grade Kerusakan yg mewajibkan foto (lihat GradeScrap di
 // backend-go/handlers_akt_produk.go) -- harus sama persis dgn salah satu opsi di atas.
 const GRADE_WAJIB_FOTO = '0070 - Scrap';
+// Grade Detail -- rincian kode alasan, muncul & wajib HANYA kalau Grade
+// Kerusakan = GRADE_WAJIB_FOTO (Scrap). Harus sama persis dgn GRADE_DETAIL_OPTIONS di App.jsx.
+const GRADE_DETAIL_OPTIONS = [
+  '0001 - Warehouse Damage', '0016 - Water Damaged', '0092 - Dropped Product',
+  '0093 - Damaged with Clamp', '0094 - Damaged with Forklift', '0003 - Transportation Damage',
+  '0103 - User/Unpacked - Display, Commercial', '0183 - NSU - Non Saleable',
+  '0184 - UER - Uneconomical', '0207 - 3PL Cost',
+];
 const BODY_POSISI_OPTIONS = ['Depan', 'Samping Kanan', 'Samping Kiri', 'Belakang', 'Others'];
 const HASIL_INSPEKSI_OPTIONS = ['Body Kusam', 'Korosi', 'Lecet', 'Ex Pakai', 'Penyok', 'Penyok Besar', 'Gores', 'Others'];
 
@@ -498,7 +506,7 @@ const KOLOM_EXPORT_INSPEKSI = [
   ['Nomor IBD', 'nomor_ibd'], ['Product', 'nomor_product'], ['Type Product', 'type_product'],
   ['Category Product', 'category_product'], ['Serial Number', 'serial_number'], ['Qty', 'qty'],
   ['Reason Penarikan', 'reason_penarikan'], ['Status Sebelum Inspeksi', 'status_sebelum_inspeksi'],
-  ['Grade Kerusakan', 'grade_kerusakan'], ['Body', 'posisi_body'], ['Hasil Inspeksi', 'hasil_inspeksi'],
+  ['Grade Kerusakan', 'grade_kerusakan'], ['Grade Detail', 'grade_detail'], ['Body', 'posisi_body'], ['Hasil Inspeksi', 'hasil_inspeksi'],
   ['Status Inspeksi', 'status_inspeksi'], ['Mulai Inspeksi At', 'mulai_inspeksi_at'],
 ];
 document.getElementById('btnToggleExport').addEventListener('click', () => {
@@ -559,6 +567,7 @@ function renderForm() {
   const posisi = pisahMultiPilihan(a.posisi_body || '', BODY_POSISI_OPTIONS);
   const hasil = pisahPilihanLainnya(a.hasil_inspeksi || '', HASIL_INSPEKSI_OPTIONS);
   const fotoWajib = a.grade_kerusakan === GRADE_WAJIB_FOTO;
+  const gradeDetail = a.grade_detail || '';
   const wrap = document.getElementById('viewForm');
   wrap.innerHTML = `
     <div class="card">
@@ -587,6 +596,13 @@ function renderForm() {
           <select id="inpGrade" ${sudahMulai ? '' : 'disabled'}>
             <option value="" disabled>-- Pilih --</option>
             ${GRADE_KERUSAKAN_OPTIONS.map(o => `<option value="${o}" ${a.grade_kerusakan === o ? 'selected' : ''}>${o}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field ${fotoWajib ? '' : 'hidden'}" id="fieldGradeDetail">
+          <label>Grade Detail<span class="wajib">*</span></label>
+          <select id="inpGradeDetail" ${sudahMulai ? '' : 'disabled'}>
+            <option value="" disabled ${!gradeDetail ? 'selected' : ''}>-- Pilih --</option>
+            ${GRADE_DETAIL_OPTIONS.map(o => `<option value="${o}" ${gradeDetail === o ? 'selected' : ''}>${o}</option>`).join('')}
           </select>
         </div>
         <div class="field" id="fieldBody">
@@ -649,6 +665,7 @@ function renderForm() {
     document.getElementById('lblFotoWajib').classList.toggle('hidden', !scrap);
     const hint = document.getElementById('fotoHint');
     if (hint) hint.style.display = scrap ? 'none' : '';
+    document.getElementById('fieldGradeDetail').classList.toggle('hidden', !scrap);
   });
   document.getElementById('btnAmbilFoto').addEventListener('click', () => document.getElementById('inpFoto').click());
   document.getElementById('inpFoto').addEventListener('change', (e) => {
@@ -683,6 +700,7 @@ async function mulaiInspeksi() {
 async function simpanUnit() {
   const statusSebelum = document.getElementById('inpStatusSebelum').value;
   const grade = document.getElementById('inpGrade').value;
+  const gradeDetail = document.getElementById('inpGradeDetail').value;
   const bodyDipilih = Array.from(document.querySelectorAll('.body-check:checked')).map((c) => c.value);
   const bodyLainnya = document.getElementById('inpBodyLainnya').value.trim();
   const posisiBody = gabungMultiPilihan(bodyDipilih, bodyLainnya);
@@ -694,12 +712,14 @@ async function simpanUnit() {
 
   let adaError = false;
   document.getElementById('fieldGrade').classList.toggle('err', !grade); if (!grade) adaError = true;
+  const perluGradeDetail = fotoWajib && !gradeDetail;
+  document.getElementById('fieldGradeDetail').classList.toggle('err', perluGradeDetail); if (perluGradeDetail) adaError = true;
   document.getElementById('fieldBody').classList.toggle('err', !posisiBody); if (!posisiBody) adaError = true;
   document.getElementById('fieldHasil').classList.toggle('err', !hasil); if (!hasil) adaError = true;
   const perluFoto = fotoWajib && !fotoFile && !sudahAdaFotoLama;
   document.getElementById('fieldFoto').classList.toggle('err', perluFoto); if (perluFoto) adaError = true;
   if (adaError) {
-    alert(`Lengkapi Grade Kerusakan, Body, dan Hasil Inspeksi${fotoWajib ? ', dan Foto' : ''} dulu sebelum disimpan.`);
+    alert(`Lengkapi Grade Kerusakan${fotoWajib ? ', Grade Detail' : ''}, Body, dan Hasil Inspeksi${fotoWajib ? ', dan Foto' : ''} dulu sebelum disimpan.`);
     return;
   }
 
@@ -709,7 +729,7 @@ async function simpanUnit() {
     await apiFetch(`/akt-produk/${unitAktif.akt_produk.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status_sebelum_inspeksi: statusSebelum, grade_kerusakan: grade, posisi_body: posisiBody, hasil_inspeksi: hasil }),
+      body: JSON.stringify({ status_sebelum_inspeksi: statusSebelum, grade_kerusakan: grade, grade_detail: gradeDetail || null, posisi_body: posisiBody, hasil_inspeksi: hasil }),
     });
     if (fotoFile) {
       const formData = new FormData();
